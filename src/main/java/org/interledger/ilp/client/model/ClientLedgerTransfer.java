@@ -6,8 +6,8 @@ import java.util.UUID;
 import javax.money.MonetaryAmount;
 
 import org.interledger.cryptoconditions.Condition;
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
 
 public class ClientLedgerTransfer implements LedgerTransfer {
 

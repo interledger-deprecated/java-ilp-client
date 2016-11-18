@@ -4,8 +4,8 @@ import java.time.Duration;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilqp.core.model.QuoteRequest;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.quoting.model.QuoteRequest;
 
 public class ClientQuoteRequest implements QuoteRequest {
 

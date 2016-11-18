@@ -2,8 +2,8 @@ package org.interledger.ilp.client.events;
 
 import java.util.EventObject;
 
-import org.interledger.ilp.core.ledger.events.LedgerTransferEvent;
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
+import org.interledger.ilp.ledger.events.LedgerTransferEvent;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
 
 public class ClientLedgerTransferEvent 
   extends EventObject implements LedgerTransferEvent {

@@ -30,7 +30,7 @@ checkstyle {
 dependencies {
     compile project(":java-ilp-core")
     compile project(":java-crypto-conditions")
-    
+
  	compile("org.slf4j:jcl-over-slf4j:1.7.12")
     
     testCompile("junit:junit:4.12")    

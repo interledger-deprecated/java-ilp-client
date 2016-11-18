@@ -2,8 +2,8 @@ package org.interledger.ilp.client.model;
 
 import java.util.UUID;
 
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.LedgerMessage;
 
 public class ClientLedgerMessage implements LedgerMessage {
 

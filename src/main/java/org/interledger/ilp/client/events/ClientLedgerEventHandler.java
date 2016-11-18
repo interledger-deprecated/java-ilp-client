@@ -1,12 +1,12 @@
 package org.interledger.ilp.client.events;
 
-import org.interledger.ilp.core.ledger.events.LedgerConnectEvent;
-import org.interledger.ilp.core.ledger.events.LedgerEvent;
-import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.core.ledger.events.LedgerMessageEvent;
-import org.interledger.ilp.core.ledger.events.LedgerTransferEvent;
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
+import org.interledger.ilp.ledger.events.LedgerConnectEvent;
+import org.interledger.ilp.ledger.events.LedgerEvent;
+import org.interledger.ilp.ledger.events.LedgerEventHandler;
+import org.interledger.ilp.ledger.events.LedgerMessageEvent;
+import org.interledger.ilp.ledger.events.LedgerTransferEvent;
+import org.interledger.ilp.ledger.model.LedgerMessage;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
 
 public abstract class ClientLedgerEventHandler implements LedgerEventHandler {
 

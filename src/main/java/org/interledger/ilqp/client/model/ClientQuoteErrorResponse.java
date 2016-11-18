@@ -1,6 +1,6 @@
 package org.interledger.ilqp.client.model;
 
-import org.interledger.ilqp.core.model.QuoteErrorResponse;
+import org.interledger.quoting.model.QuoteErrorResponse;
 
 public class ClientQuoteErrorResponse implements QuoteErrorResponse {
 

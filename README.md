@@ -6,7 +6,7 @@ Currently implements basic five-bells-ledger REST client. The plan is to impleme
 
 It uses spring-boot to run a command line tool which dumps data to the logs.
 
-Classes in `org.interledger.ilp.core.ledger.model` will be moved to the java-ilp-core package when they have stabilized.
+Classes in `org.interledger.ilp.ledger.model` will be moved to the java-ilp-core package when they have stabilized.
 
 ## Configuration
 
