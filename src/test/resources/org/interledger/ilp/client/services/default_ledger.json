@@ -1,0 +1,26 @@
+{
+	"currency_code": "ZAR",
+    "currency_symbol": "R",
+    "precision": 10,
+    "scale": 10,
+    "condition_sign_public_key": "YXg177AOkDlGGrBaoSET+UrMscbHGwFXHqfUMBZTtCY=",
+    "notification_sign_public_key": "YXg177AOkDlGGrBaoSET+UrMscbHGwFXHqfUMBZTtCY=",
+    "ilp_prefix": "za.zar.ledger.",
+    "urls": {
+        "health": "https://ledger.example.com/ledger/health",
+        "transfer": "https://ledger.example.com/ledger/transfers/:id",
+        "transfer_fulfillment": "https://ledger.example.com/ledger/transfers/:id/fulfillment",
+        "transfer_rejection": "https://ledger.example.com/ledger/transfers/:id/rejection",
+        "transfer_state": "https://ledger.example.com/ledger/transfers/:id/state",
+        "accounts": "https://ledger.example.com/ledger/accounts",
+        "account": "https://ledger.example.com/ledger/accounts/:name",
+        "account_transfers": "wss://ledger.example.com/ledger/accounts/:name/transfers",
+        "message": "https://ledger.example.com/ledger/messages"
+    },
+    "connectors": [
+        {
+            "id": "https://ledger.example.com/ledger/accounts/adrian",
+            "name": "adrian"
+        }
+    ]
+}

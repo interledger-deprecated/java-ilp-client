@@ -29,3 +29,7 @@ gradle-app.setting
 **/target/
 **/*.log
 **/nbactions.xml
+
+### Local Config - May contain passwords ###
+config/application.properties
+

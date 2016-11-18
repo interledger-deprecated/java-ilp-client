@@ -1,3 +1,7 @@
+group = 'org.interledger'
+description = 'Interledger REST Ledger Client'
+version = '0.1.0-SNAPSHOT'
+
 buildscript {
     repositories {
         mavenCentral()
@@ -10,24 +14,68 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'checkstyle'
 apply plugin: 'org.springframework.boot'
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 jar {
-    baseName = 'ilp-client'
-    version =  '0.1.0'
+    manifest {
+        attributes 'Implementation-Title': description,
+                   'Implementation-Version': version
+    }
 }
 
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+checkstyle {
+    configFile file('google_checks.xml')
+    toolVersion '7.1'
+    showViolations = true
+}
 
 dependencies {
+    compile project(":java-ilp-core")
+    compile project(":java-crypto-conditions")
     compile("org.springframework.boot:spring-boot-starter")
     compile("org.springframework:spring-web")
+    compile("org.springframework.security:spring-security-web")
     compile("com.fasterxml.jackson.core:jackson-databind")
     compile("org.apache.httpcomponents:httpclient")
-    testCompile("junit:junit")
+    
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("junit:junit:4.12")
+}
+
+//Maven compatibility task:
+task writePom << {    
+    pom {
+        project {
+            inceptionYear '2016'    
+            properties {
+                "project.build.sourceEncoding" "UTF-8"
+                "checkstyle.config.location" "google_checks.xml"
+                "checkstyle.consoleOutput" "true"
+            }            
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            reporting  {
+                plugins {
+                    plugin {
+                        groupId "org.apache.maven.plugins"
+                        artifactId "maven-checkstyle-plugin"
+                        version "2.17"
+                    }                   
+                }
+            }
+        }
+    }.writeTo("pom.xml")
 }
