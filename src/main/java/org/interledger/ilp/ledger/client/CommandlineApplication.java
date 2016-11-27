@@ -1,11 +1,15 @@
 package org.interledger.ilp.ledger.client;
 
+import java.util.UUID;
+
 import org.interledger.ilp.core.ledger.model.Account;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.core.ledger.service.LedgerAccountService;
 import org.interledger.ilp.core.ledger.service.LedgerMetaService;
 import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
+import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.client.exceptions.RestServiceException;
+import org.interledger.ilp.ledger.model.impl.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +36,7 @@ public class CommandlineApplication implements CommandLineRunner {
   @Value("${ledger.rest.password:NULL}")
   private String ledgerPassword;
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     SpringApplication.run("classpath:/META-INF/application-context.xml", args);
   }
 
@@ -54,6 +58,20 @@ public class CommandlineApplication implements CommandLineRunner {
     } catch (RestServiceException e) {
       log.error("Error getting account data.", e);
     }
+
+    try {
+      LedgerTransferService transferService = ledgerServiceFactory.getTransferService();
+      Transfer transfer = new Transfer();
+      transfer.setId(UUID.randomUUID().toString());
+      transfer.setAmount("100");
+      transfer.setFromAccount("admin");
+      transfer.setToAccount("hold");
+
+      transferService.send(transfer);
+    } catch (RestServiceException e) {
+      log.error("Error creating transfer.", e);
+    }
+    
   }
 
   @Bean

@@ -6,7 +6,7 @@
 				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:annotation-config/>
-	<context:property-placeholder/>
+	<context:property-placeholder ignore-unresolvable="true" null-value="" />
 	
 	<bean id="application" class="org.interledger.ilp.ledger.client.CommandlineApplication">
     	<property name="ledgerServiceFactory" ref="restLedgerServiceFactory"/>

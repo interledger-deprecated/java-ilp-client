@@ -7,7 +7,9 @@ import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.core.ledger.service.LedgerAccountService;
 import org.interledger.ilp.core.ledger.service.LedgerMetaService;
 import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
+import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.client.rest.json.JsonLedgerInfo;
+import org.interledger.ilp.ledger.client.rest.json.JsonLedgerUrls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +22,7 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
 
   private LedgerAccountService accountService;
   private LedgerMetaService metaService;
+  private LedgerTransferService transferService;
 
   private RestTemplateBuilder restTemplateBuilder;
 
@@ -30,7 +33,6 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
 
     this.restTemplateBuilder = restTemplateBuilder;
     this.ledgerBaseUrl = new URI(ledgerBaseUrl);
-
   }
 
   private RestTemplateBuilder getRestTemplateBuilderWithAuthIfAvailable() {
@@ -74,6 +76,46 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
   }
 
   @Override
+  public LedgerTransferService getTransferService() throws Exception {
+
+    // The service is Autowired but may not be configured
+    if (transferService instanceof RestLedgerTransferService) {
+
+      RestLedgerTransferService txService = (RestLedgerTransferService) transferService;
+
+      // If no URL is configured then use the one fetched from the meta
+      // service
+      if (txService.getServiceUrl() == null || txService.getAccountUrl() == null) {
+
+        LedgerInfo info = getMetaService().getLedgerInfo();
+
+        if (info instanceof JsonLedgerInfo) {
+
+          JsonLedgerUrls urls = ((JsonLedgerInfo) info).getUrls();
+
+          if (txService.getServiceUrl() == null) {
+            txService.setServiceUrl(urls.getTransferUrl().toString());
+          }
+
+          if (txService.getAccountUrl() == null) {
+            txService.setAccountUrl(urls.getAccountUrl().toString());
+          }
+        }
+      }
+
+      if (txService.getLedgerUrl() == null) {
+        txService.setLedgerUrl(ledgerBaseUrl.toString());
+      }
+
+      // If no RestTemplate is configured use the builder
+      if (txService.getRestTemplate() == null) {
+        txService.setRestTemplate(getRestTemplateBuilderWithAuthIfAvailable().build());
+      }
+    }
+    return transferService;
+  }
+
+	@Override
   public LedgerMetaService getMetaService() throws Exception {
 
     // The service is Autowired but may not be configured
@@ -81,10 +123,7 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
 
       // If no URL is configured then build from the ledger's base
       if (((RestServiceBase) metaService).getServiceUrl() == null) {
-
-        // TODO Make "/ledger" configurable
-        URI metaUri = ledgerBaseUrl.resolve("/ledger");
-        ((RestServiceBase) metaService).setServiceUrl(metaUri.toString());
+        ((RestServiceBase) metaService).setServiceUrl(ledgerBaseUrl.toString());
       }
 
       // If no RestTemplate is configured use the builder
@@ -112,4 +151,8 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
     this.metaService = metaService;
   }
 
+  @Autowired
+  public void setTransferService(LedgerTransferService transferService) {
+    this.transferService = transferService;
+  }  
 }
