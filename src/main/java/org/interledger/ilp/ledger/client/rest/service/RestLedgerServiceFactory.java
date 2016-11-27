@@ -7,6 +7,7 @@ import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.core.ledger.service.LedgerAccountService;
 import org.interledger.ilp.core.ledger.service.LedgerMetaService;
 import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
+import org.interledger.ilp.core.ledger.service.LedgerTransferRejectionService;
 import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.client.rest.json.JsonLedgerInfo;
 import org.interledger.ilp.ledger.client.rest.json.JsonLedgerUrls;
@@ -23,6 +24,7 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
   private LedgerAccountService accountService;
   private LedgerMetaService metaService;
   private LedgerTransferService transferService;
+  private LedgerTransferRejectionService transferRejectionService;
 
   private RestTemplateBuilder restTemplateBuilder;
 
@@ -75,6 +77,31 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
     return accountService;
   }
 
+  @Override
+  public LedgerTransferRejectionService getTransferRejectionService() throws Exception {
+    // The service is Autowired but may not be configured
+    if (transferRejectionService instanceof RestLedgerTransferRejectionService) {
+      // If no URL is configured then use the one fetched from the meta service
+      if (((RestServiceBase) transferRejectionService).getServiceUrl() == null) {
+        LedgerInfo info = getMetaService().getLedgerInfo();
+
+        if (info instanceof JsonLedgerInfo) {
+          String rejectionUrl = ((JsonLedgerInfo) info).getUrls().getTransferRejectionUrl()
+              .toString();
+          ((RestServiceBase) transferRejectionService).setServiceUrl(rejectionUrl);
+        }
+      }
+
+      // If no RestTemplate is configured use the builder
+      if (((RestServiceBase) transferRejectionService).getRestTemplate() == null) {
+        ((RestServiceBase) transferRejectionService)
+            .setRestTemplate(getRestTemplateBuilderWithAuthIfAvailable().build());
+      }
+    }
+
+    return transferRejectionService;
+  }
+  
   @Override
   public LedgerTransferService getTransferService() throws Exception {
 
@@ -154,5 +181,10 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
   @Autowired
   public void setTransferService(LedgerTransferService transferService) {
     this.transferService = transferService;
-  }  
+  } 
+  
+  @Autowired
+  public void setTransferRejectionService(LedgerTransferRejectionService transferRejectionService) {
+    this.transferRejectionService = transferRejectionService;
+  }
 }

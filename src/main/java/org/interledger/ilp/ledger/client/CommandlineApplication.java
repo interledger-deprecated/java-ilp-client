@@ -4,9 +4,11 @@ import java.util.UUID;
 
 import org.interledger.ilp.core.ledger.model.Account;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.core.ledger.service.LedgerAccountService;
 import org.interledger.ilp.core.ledger.service.LedgerMetaService;
 import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
+import org.interledger.ilp.core.ledger.service.LedgerTransferRejectionService;
 import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.client.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.model.impl.Transfer;
@@ -59,19 +61,28 @@ public class CommandlineApplication implements CommandLineRunner {
       log.error("Error getting account data.", e);
     }
 
+    UUID transferId = UUID.randomUUID();
     try {
       LedgerTransferService transferService = ledgerServiceFactory.getTransferService();
       Transfer transfer = new Transfer();
-      transfer.setId(UUID.randomUUID().toString());
+      transfer.setId(transferId.toString());
       transfer.setAmount("100");
       transfer.setFromAccount("admin");
       transfer.setToAccount("hold");
 
       transferService.send(transfer);
-    } catch (RestServiceException e) {
+    } catch (Exception e) {
       log.error("Error creating transfer.", e);
     }
     
+    try {
+      LedgerTransferRejectionService rejectionService = ledgerServiceFactory.getTransferRejectionService();
+      Transfer transfer = new Transfer();
+      transfer.setId(transferId.toString());
+      rejectionService.rejectTransfer(transfer, TransferRejectedReason.TIMEOUT);
+    } catch (Exception e) {
+      log.error("Error rejecting transfer.", e);
+    }
   }
 
   @Bean
