@@ -41,8 +41,11 @@ dependencies {
     compile project(":java-ilp-core")
     compile project(":java-crypto-conditions")
     compile("org.springframework.boot:spring-boot-starter")
+    compile("org.springframework.boot:spring-boot-starter-websocket")
     compile("org.springframework:spring-web")
-    compile("org.springframework.security:spring-security-web")
+    compile("org.springframework:spring-websocket")
+	compile("org.springframework.security:spring-security-web")
+    compile("org.springframework.integration:spring-integration-core")
     compile("com.fasterxml.jackson.core:jackson-databind")
     compile("org.apache.httpcomponents:httpclient")
     

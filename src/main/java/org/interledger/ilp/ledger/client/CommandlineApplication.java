@@ -6,6 +6,7 @@ import org.interledger.ilp.core.ledger.model.Account;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.core.ledger.service.LedgerAccountService;
+import org.interledger.ilp.core.ledger.service.LedgerMessageService;
 import org.interledger.ilp.core.ledger.service.LedgerMetaService;
 import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
 import org.interledger.ilp.core.ledger.service.LedgerTransferRejectionService;
@@ -83,6 +84,17 @@ public class CommandlineApplication implements CommandLineRunner {
     } catch (Exception e) {
       log.error("Error rejecting transfer.", e);
     }
+    
+    try {
+      LedgerMessageService messageService = ledgerServiceFactory.getMessageService();
+      messageService.connect();
+      log.info("Connected to " + messageService.getConnectionString());
+    } catch (RestServiceException e) {
+      log.error("Error getting account data.", e);
+    }
+    
+    System.out.println("\n\n\nPress any key to exit\n\n\n");
+    System.in.read();    
   }
 
   @Bean

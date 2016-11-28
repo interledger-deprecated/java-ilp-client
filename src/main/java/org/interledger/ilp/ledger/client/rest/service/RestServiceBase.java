@@ -13,7 +13,7 @@ public class RestServiceBase {
 
   protected static final Logger log = LoggerFactory.getLogger(RestServiceBase.class);
 
-  private static final Pattern regex = Pattern.compile("\\:([A-Za-z0-9-]+)");
+  private static final Pattern regex = Pattern.compile("/\\:([A-Za-z0-9-]+)");
 
   protected RestTemplate restTemplate;
   protected String serviceUrl;
@@ -35,7 +35,7 @@ public class RestServiceBase {
   }
 
   private String fixUriTemplates(String input) {
-    return regex.matcher(input.toString()).replaceAll("\\{$1\\}");
+    return regex.matcher(input.toString()).replaceAll("/\\{$1\\}");
   }
 
   protected RestServiceException parseRestException(HttpStatusCodeException knownException) {

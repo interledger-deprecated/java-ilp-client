@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.core.ledger.service.LedgerAccountService;
+import org.interledger.ilp.core.ledger.service.LedgerMessageService;
 import org.interledger.ilp.core.ledger.service.LedgerMetaService;
 import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
 import org.interledger.ilp.core.ledger.service.LedgerTransferRejectionService;
@@ -25,6 +26,7 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
   private LedgerMetaService metaService;
   private LedgerTransferService transferService;
   private LedgerTransferRejectionService transferRejectionService;
+  private LedgerMessageService messageService;
 
   private RestTemplateBuilder restTemplateBuilder;
 
@@ -35,6 +37,7 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
 
     this.restTemplateBuilder = restTemplateBuilder;
     this.ledgerBaseUrl = new URI(ledgerBaseUrl);
+
   }
 
   private RestTemplateBuilder getRestTemplateBuilderWithAuthIfAvailable() {
@@ -143,6 +146,23 @@ public class RestLedgerServiceFactory implements LedgerServiceFactory {
   }
 
 	@Override
+  public LedgerMessageService getMessageService() throws Exception {
+
+    if(messageService == null) {
+      LedgerInfo info = getMetaService().getLedgerInfo();
+      if (info instanceof JsonLedgerInfo) {
+        String messageWsUrl = ((JsonLedgerInfo) info).getUrls().getWebsocketUrl().toString();
+        messageService = new RestLedgerMessageService(messageWsUrl);
+      } else {
+        //Don't know how to instantiate the message service without the URL
+        throw new Exception("Unable to load message service.");
+      }
+    }
+    
+    return messageService;
+  }
+
+  @Override
   public LedgerMetaService getMetaService() throws Exception {
 
     // The service is Autowired but may not be configured
