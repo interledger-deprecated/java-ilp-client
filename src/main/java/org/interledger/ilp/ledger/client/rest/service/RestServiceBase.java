@@ -1,5 +1,7 @@
 package org.interledger.ilp.ledger.client.rest.service;
 
+import java.net.URI;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.interledger.ilp.ledger.client.exceptions.RestServiceException;
@@ -16,26 +18,27 @@ public class RestServiceBase {
   private static final Pattern regex = Pattern.compile("/\\:([A-Za-z0-9-]+)");
 
   protected RestTemplate restTemplate;
-  protected String serviceUrl;
+  protected Map<String, URI> urls;
 
-  public void setRestTemplate(RestTemplate restTemplate) {
-    this.restTemplate = restTemplate;
+  private String fixUriTemplates(String input) {
+    return regex.matcher(input.toString()).replaceAll("/\\{$1\\}");
   }
-
-  public String getServiceUrl() {
-    return this.serviceUrl;
+  
+  public RestServiceBase(RestTemplate restTemplate, Map<String, URI> urls) {
+    this.restTemplate = restTemplate;
+    this.urls = urls;
   }
 
   public RestTemplate getRestTemplate() {
     return this.restTemplate;
   }
-
-  public void setServiceUrl(String serviceUrl) {
-    this.serviceUrl = fixUriTemplates(serviceUrl);
-  }
-
-  private String fixUriTemplates(String input) {
-    return regex.matcher(input.toString()).replaceAll("/\\{$1\\}");
+  
+  public String getServiceUrl(String urlName) {
+    URI uri = urls.get(urlName);
+    if(uri != null) {
+      return fixUriTemplates(uri.toString());
+    }
+    throw new RuntimeException("Unknown service URL: " + urlName);
   }
 
   protected RestServiceException parseRestException(HttpStatusCodeException knownException) {
@@ -51,5 +54,7 @@ public class RestServiceBase {
     }
     return new RestServiceException(error, knownException);
   }
+
+
 
 }

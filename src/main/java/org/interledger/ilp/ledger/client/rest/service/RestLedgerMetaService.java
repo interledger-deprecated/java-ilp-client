@@ -1,55 +1,38 @@
 package org.interledger.ilp.ledger.client.rest.service;
 
 import java.net.URI;
+import java.util.Map;
 
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
-import org.interledger.ilp.core.ledger.service.LedgerMetaService;
-import org.interledger.ilp.ledger.client.exceptions.RestServiceException;
+import org.interledger.ilp.ledger.client.rest.RestLedgerClient;
 import org.interledger.ilp.ledger.client.rest.json.JsonLedgerInfo;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
 
-@Service
-public class RestLedgerMetaService extends RestServiceBase implements LedgerMetaService {
+public class RestLedgerMetaService extends RestServiceBase {
 
-  private LedgerInfo cache;
-
-  private String metadataPath;
-  
-  public RestLedgerMetaService(@Value("${ledger.rest.metadata_path:}") String metadataPath) {
-    this.metadataPath = metadataPath;
+  public RestLedgerMetaService(RestTemplate restTemplate, Map<String, URI> urls) {
+    super(restTemplate, urls);
   }
   
-  @Override
-  public LedgerInfo getLedgerInfo() throws HttpStatusCodeException, RestServiceException {
+  public JsonLedgerInfo getLedgerInfo() {
+    
+    try {
 
-    if (cache == null) {
-      try {
-
-        log.debug("GET Meta");
-
-        LedgerInfo ledgerInfo = restTemplate.getForObject(
-            URI.create(this.serviceUrl).resolve(metadataPath != null ? metadataPath : ""),
-            JsonLedgerInfo.class);
-
-        cache = ledgerInfo;
-
-      } catch (HttpStatusCodeException e) {
-        switch (e.getStatusCode()) {
-          // No known RestExceptions for the metadata service
-          // case BAD_REQUEST:
-          // throw parseRestException(e);
-          default:
-            throw e;
-        }
+      log.debug("GET Meta");
+      return restTemplate.getForObject(
+          getServiceUrl(RestLedgerClient.LEDGER_URL_NAME),
+          JsonLedgerInfo.class);
+      
+    } catch (HttpStatusCodeException e) {
+      switch (e.getStatusCode()) {
+        // No known RestExceptions for the metadata service
+        // case BAD_REQUEST:
+        // throw parseRestException(e);
+        default:
+          throw e;
       }
-    } else {
-      log.debug("CACHED Meta");
     }
-
-    // TODO Safe copy
-    return cache;
+    
   }
 
 }

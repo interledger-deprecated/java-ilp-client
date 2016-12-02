@@ -3,8 +3,6 @@ package org.interledger.ilp.ledger.client.rest.json;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.interledger.ilp.core.InterledgerPacketHeader;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

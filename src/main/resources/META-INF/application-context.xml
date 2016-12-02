@@ -9,34 +9,17 @@
 	<context:property-placeholder ignore-unresolvable="true" null-value="" />
 	
 	<bean id="application" class="org.interledger.ilp.ledger.client.CommandlineApplication">
-    	<property name="ledgerServiceFactory" ref="restLedgerServiceFactory"/>
+    <!-- 	<property name="ledgerServiceFactory" ref="restLedgerServiceFactory"/>  -->
 	</bean>
 
-	<bean id="restLedgerServiceFactory" class="org.interledger.ilp.ledger.client.rest.service.RestLedgerServiceFactory">
+	<bean id="restLedgerClient" class="org.interledger.ilp.ledger.client.rest.RestLedgerClient">
     	<constructor-arg name="ledgerBaseUrl" value="${ledger.rest.url}"/>
+    	<property name="accountAuthToken" ref="restCredentials"/>
 	</bean>	
-			
-	<!-- HTTP Client config -->
-	<!-- 
-	<bean id="apacheHttpClientRestTemplateBuilder" class="org.springframework.boot.web.client.RestTemplateBuilder">
-    	<property name="requestFactory" ref="httpComponentsClientHttpRequestFactory"/>
+	
+	<bean id="restCredentials" class="org.springframework.security.authentication.UsernamePasswordAuthenticationToken">
+    	<constructor-arg name="principal" value="${ledger.rest.username}"/>
+    	<constructor-arg name="credentials" value="${ledger.rest.password}"/>
 	</bean>
-	
-	<bean id="httpComponentsClientHttpRequestFactory" class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory" />
-	 -->
-		
-	<!-- Provide AuthToken bean directly
-	<bean id="basicAuthAccountAuthToken" class="org.springframework.security.authentication.UsernamePasswordAuthenticationToken">
-    	<constructor-arg name="principal" value="${ledger.rest.username}" />
-    	<constructor-arg name="credentials" value="${ledger.rest.password}" />
-	</bean>	
-	 -->
-	
-    <!-- Use the Spring BeanFactory to wire the ledger service as a service factory 
-    <bean id="ledgerServiceFactory" class="org.springframework.beans.factory.config.ServiceLocatorFactoryBean">
-     <property name="serviceLocatorInterface" value="org.interledger.ilp.core.ledger.model.ledger.service.LedgerServiceFactory"/>
-    </bean>	
-    <bean id="ledgerAccountService" class="org.interledger.ilp.ledger.client.rest.service.RestLedgerAccountService"/>
- 	-->
 
 </beans>

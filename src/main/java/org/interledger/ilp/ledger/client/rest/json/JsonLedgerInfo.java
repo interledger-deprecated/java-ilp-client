@@ -1,6 +1,8 @@
 package org.interledger.ilp.ledger.client.rest.json;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import org.interledger.ilp.core.ledger.model.ConnectorInfo;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
@@ -19,7 +21,7 @@ public class JsonLedgerInfo implements LedgerInfo {
   private int scale;
   private String currencyCode;
   private String currencySymbol;
-  private JsonLedgerUrls urls;
+  private Map<String, URI> urls;
   private List<ConnectorInfo> connectors;
   private String notificationSignPublicKey;
   private String conditionSignPublicKey;
@@ -80,7 +82,7 @@ public class JsonLedgerInfo implements LedgerInfo {
   }
   
   @JsonProperty(value = "urls")
-  public JsonLedgerUrls getUrls() {
+  public Map<String, URI> getUrls() {
     return urls;
   }
 
@@ -111,7 +113,7 @@ public class JsonLedgerInfo implements LedgerInfo {
     this.currencySymbol = currencySymbol;
   }
 
-  public void setUrls(JsonLedgerUrls urls) {
+  public void setUrls(Map<String, URI> urls) {
     this.urls = urls;
   }
 

@@ -4,8 +4,12 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
-import org.interledger.ilp.ledger.client.rest.json.JsonLedgerInfo;
+import org.interledger.ilp.ledger.client.rest.RestLedgerClient;
 import org.interledger.ilp.ledger.client.rest.service.RestLedgerMetaService;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,11 +40,11 @@ public class RemoteLedgerMetaServiceTests {
 
     this.mockServer.expect(requestTo("/")).andExpect(method(HttpMethod.GET))
         .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
+    
+    Map<String, URI> urls = new HashMap<>();
+    urls.put(RestLedgerClient.LEDGER_URL_NAME, URI.create("/"));
 
-
-    RestLedgerMetaService service = new RestLedgerMetaService("");
-    service.setServiceUrl("/");
-    service.setRestTemplate(restTemplate);
+    RestLedgerMetaService service = new RestLedgerMetaService(restTemplate, urls);
     
     @SuppressWarnings("unused")
     LedgerInfo ledger = service.getLedgerInfo();

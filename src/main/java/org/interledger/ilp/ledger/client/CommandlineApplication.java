@@ -1,83 +1,89 @@
 package org.interledger.ilp.ledger.client;
 
-import java.util.UUID;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Map;
 
-import org.interledger.ilp.core.ledger.model.Account;
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
-import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
-import org.interledger.ilp.core.ledger.service.LedgerAccountService;
-import org.interledger.ilp.core.ledger.service.LedgerMessageService;
-import org.interledger.ilp.core.ledger.service.LedgerMetaService;
-import org.interledger.ilp.core.ledger.service.LedgerServiceFactory;
-import org.interledger.ilp.core.ledger.service.LedgerTransferRejectionService;
-import org.interledger.ilp.core.ledger.service.LedgerTransferService;
-import org.interledger.ilp.ledger.client.exceptions.RestServiceException;
-import org.interledger.ilp.ledger.model.impl.Transfer;
+import org.apache.commons.cli.HelpFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
+@Component
 @SpringBootApplication
-public class CommandlineApplication implements CommandLineRunner {
+public class CommandlineApplication implements CommandLineRunner, ApplicationContextAware{
 
   private static final Logger log = LoggerFactory.getLogger(CommandlineApplication.class);
 
-  private LedgerServiceFactory ledgerServiceFactory;
-
-  @Value("${ledger.default.account:issuer}")
-  private String defaultAccount;
-
-  @Value("${ledger.rest.username:NULL}")
-  private String ledgerUsername;
-
-  @Value("${ledger.rest.password:NULL}")
-  private String ledgerPassword;
-
+  private ApplicationContext applicationContext;
+  
   public static void main(String[] args) {
     SpringApplication.run("classpath:/META-INF/application-context.xml", args);
   }
 
-  @Override
   public void run(String... args) throws Exception {
+    
+    if(args.length == 0) {
+      
+      Map<String, LedgerCommand> commands = applicationContext.getBeansOfType(LedgerCommand.class);
 
+      HelpFormatter formatter = new HelpFormatter();
+      formatter.printHelp("<command> [options]", commands.get("helpCommand").getDefaultOptions());
+      
+       System.out.println("\r\n"
+          + "Settings are read from application.properties but may be overridden through options.\r\n"
+          + "\r\n"
+          + "Commands:\r\n");
+       
+       for (LedgerCommand command : commands.values()) {
+         System.out.println(command.getCommand() + " - " + command.getDescription());
+       }
+       
+      //Loop and read in commands
+      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+      String commandLine = reader.readLine();
+      
+      while(!"quit".equals(commandLine.trim())) {
+        
+      args = commandLine.split(" ");
+        
+        if(args.length > 0) {
+          LedgerCommand command = LedgerCommand.getLedgerCommand(args[0], commands);
+          if(command != null) {
+            try {
+              command.run(args);
+            } catch (Exception e) {
+              e.printStackTrace(System.err);
+            }
+          } else {
+            log.error("Unrecognized command: " + args[0]);
+          }
+        } else {
+          //Empty line
+        }
+        
+        commandLine = reader.readLine();
+        
+      }
+    }
+    /*
     try {
-      LedgerMetaService metaService = ledgerServiceFactory.getMetaService();
+      LedgerMetaService metaService = ledgerClient.getMetaService();
       LedgerInfo ledgerInfo = metaService.getLedgerInfo();
       log.info(ledgerInfo.toString());
     } catch (RestServiceException e) {
       log.error("Error getting ledger meta data.", e);
     }
 
+ 
     try {
-      LedgerAccountService accountService = ledgerServiceFactory.getAccountService();
-      Account account = accountService.getAccount(defaultAccount);
-      log.info(account.toString());
-    } catch (RestServiceException e) {
-      log.error("Error getting account data.", e);
-    }
-
-    UUID transferId = UUID.randomUUID();
-    try {
-      LedgerTransferService transferService = ledgerServiceFactory.getTransferService();
-      Transfer transfer = new Transfer();
-      transfer.setId(transferId.toString());
-      transfer.setAmount("100");
-      transfer.setFromAccount("admin");
-      transfer.setToAccount("hold");
-
-      transferService.send(transfer);
-    } catch (Exception e) {
-      log.error("Error creating transfer.", e);
-    }
-    
-    try {
-      LedgerTransferRejectionService rejectionService = ledgerServiceFactory.getTransferRejectionService();
+      LedgerTransferRejectionService rejectionService = ledgerClient.getTransferRejectionService();
       Transfer transfer = new Transfer();
       transfer.setId(transferId.toString());
       rejectionService.rejectTransfer(transfer, TransferRejectedReason.TIMEOUT);
@@ -86,7 +92,7 @@ public class CommandlineApplication implements CommandLineRunner {
     }
     
     try {
-      LedgerMessageService messageService = ledgerServiceFactory.getMessageService();
+      LedgerNotificationListenerService messageService = ledgerClient.getMessageService();
       messageService.connect();
       log.info("Connected to " + messageService.getConnectionString());
     } catch (RestServiceException e) {
@@ -95,19 +101,12 @@ public class CommandlineApplication implements CommandLineRunner {
     
     System.out.println("\n\n\nPress any key to exit\n\n\n");
     System.in.read();    
+    */
   }
 
-  @Bean
-  public UsernamePasswordAuthenticationToken getAuthToken() {
-    if (!"NULL".equals(ledgerUsername) && !"NULL".equals(ledgerPassword)) {
-      return new UsernamePasswordAuthenticationToken(ledgerUsername, ledgerPassword);
-    }
-    return null;
-  }
-
-  @Autowired
-  public void setLedgerServiceFactory(LedgerServiceFactory factory) {
-    this.ledgerServiceFactory = factory;
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
   }
 
 }
