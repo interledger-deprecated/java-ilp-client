@@ -10,24 +10,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ListenCommand extends LedgerCommand {
+public class DisconnectListenerCommand extends LedgerCommand {
 
-  private static final Logger log = LoggerFactory.getLogger(ListenCommand.class);
+  private static final Logger log = LoggerFactory.getLogger(DisconnectListenerCommand.class);
 
   @Override
   protected String getCommand() {
-    return "listen";
+    return "disconnectListener";
   }
 
   @Override
   protected String getDescription() {
-    return "Listen on websocket for notifications.";
+    return "stops websocket listener connection.";
   }
   
   @Override
   protected Options getOptions() {
-    return new Options().addOption(Option.builder("ws").argName("websocket URL").hasArg()
-        .desc("The ws: URL of the notification service.").build());
+    return getDefaultOptions()
+        .addOption(
+            Option.builder("ws").argName("websocket URL").hasArg()
+            .desc("The ws: URL of the notification service.").build());
   }
 
   @Override
@@ -36,14 +38,7 @@ public class ListenCommand extends LedgerCommand {
     log.debug("Getting listener service.");
     LedgerNotificationListenerService service = ledgerClient.getLedgerNotificationListenerService();
     
-    log.debug("Connecting listener...");
-    service.connect();
-    
-    System.out.println("\n\n\nPress any key to disconnect\n\n\n");
-    System.in.read();
-    
     log.debug("Disconnecting listener...");
-    service.disconnect();
-    log.debug("Disconnected");
+    service.disconnect();    
   }
 }

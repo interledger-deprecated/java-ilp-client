@@ -119,7 +119,7 @@ public class RestLedgerClient implements LedgerClient, ApplicationContextAware {
         throw new Exception("Invalid websocket URL: " + wsUri);
       }
       
-      this.notificationListenerService = new JsonRpcLedgerNotificationListenerService(wsUri.toString());
+      this.notificationListenerService = new JsonRpcLedgerNotificationListenerService(wsUri.toString(), context);
     }
     
     return this.notificationListenerService;

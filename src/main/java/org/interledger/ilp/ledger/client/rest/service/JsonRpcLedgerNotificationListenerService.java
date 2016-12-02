@@ -5,18 +5,22 @@ import org.interledger.ilp.core.ledger.model.Notification;
 import org.interledger.ilp.core.ledger.service.LedgerNotificationListenerService;
 import org.interledger.ilp.ledger.client.ws.JsonRpcWebSocketClientHandler;
 import org.interledger.ilp.ledger.client.ws.JsonRpcWebsocketClient;
+import org.interledger.ilp.ledger.client.ws.jsonrpc.JsonRpcRequest;
+import org.interledger.ilp.ledger.client.ws.jsonrpc.SubscribeRpcCallFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.client.WebSocketConnectionManager;
 
 public class JsonRpcLedgerNotificationListenerService implements LedgerNotificationListenerService {
 
   private String connectionString;
-  private WebSocketHandler handler;
+  private JsonRpcWebSocketClientHandler handler;
   private WebSocketConnectionManager connectionManager;
   
-  public JsonRpcLedgerNotificationListenerService(String connectionString) {
+  public JsonRpcLedgerNotificationListenerService(String connectionString,
+      ApplicationEventPublisher publisher) {
     this.connectionString = connectionString;
+    this.handler = new JsonRpcWebSocketClientHandler(publisher);
   }
   
   @Override
@@ -38,7 +42,6 @@ public class JsonRpcLedgerNotificationListenerService implements LedgerNotificat
   @Override
   public void connect() {
     JsonRpcWebsocketClient client = new JsonRpcWebsocketClient();
-    handler = new JsonRpcWebSocketClientHandler();
     connectionManager = new WebSocketConnectionManager(client, handler, connectionString);
     connectionManager.start();
   }
@@ -49,8 +52,16 @@ public class JsonRpcLedgerNotificationListenerService implements LedgerNotificat
   
   @Override
   public void disconnect() throws Exception {
-    // TODO Auto-generated method stub
-    
+    connectionManager.stop();
+  }
+
+  @Override
+  public void subscribeToAccountNotifications(String account) throws Exception {
+    if (!isConnected()) {
+      throw new Exception("Client is not connected.");
+    }
+    JsonRpcRequest subReq = SubscribeRpcCallFactory.build("admin");
+    handler.sendRpcRequest(subReq);
   }
 
 }

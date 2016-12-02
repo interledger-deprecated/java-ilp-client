@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.util.Map;
 
 import org.apache.commons.cli.HelpFormatter;
+import org.interledger.ilp.ledger.client.events.LedgerNotificationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -13,6 +14,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -109,4 +111,10 @@ public class CommandlineApplication implements CommandLineRunner, ApplicationCon
     this.applicationContext = applicationContext;
   }
 
+  @EventListener
+  public void handleTransferNotification(LedgerNotificationEvent event) {
+    log.info("received ledger notification event {}", event);
+  }
+  
+  
 }
