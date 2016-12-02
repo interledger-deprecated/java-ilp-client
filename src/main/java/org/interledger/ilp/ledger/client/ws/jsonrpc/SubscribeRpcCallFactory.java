@@ -1,6 +1,7 @@
 package org.interledger.ilp.ledger.client.ws.jsonrpc;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SubscribeRpcCallFactory {
   public static final String METHOD = "subscribe_account";
   
-  public static JsonRpcRequest build(String... accounts) {
+  public static JsonRpcRequest build(URI accountUrl, String... accounts) {
     JsonRpcRequest req = new JsonRpcRequest();
     req.setVersion("2.0"); //TODO:??
     req.setId(UUID.randomUUID().toString());
@@ -19,7 +20,7 @@ public class SubscribeRpcCallFactory {
     List<URI> accParam = new ArrayList<>();
     
     for (String account : accounts) {
-      accParam.add(URI.create("http://andrew-ilp/accounts/" + account));
+      accParam.add(URI.create(accountUrl.toString().replace(":name", account)));
     }
     
     SubscribeParams params = new SubscribeParams();

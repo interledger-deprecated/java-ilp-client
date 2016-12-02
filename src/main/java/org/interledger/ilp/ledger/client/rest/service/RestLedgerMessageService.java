@@ -1,11 +1,14 @@
 package org.interledger.ilp.ledger.client.rest.service;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.interledger.ilp.core.ledger.model.Message;
 import org.interledger.ilp.ledger.client.exceptions.RestServiceException;
+import org.interledger.ilp.ledger.model.impl.MessageImpl;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -24,8 +27,12 @@ public class RestLedgerMessageService extends RestServiceBase {
 
       log.debug("POST message");
       
-      HttpEntity<Message> request = new HttpEntity<Message>(msg);
-      request.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+      MessageImpl nativeMsg = mapToNative(msg);
+      
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      
+      HttpEntity<Message> request = new HttpEntity<Message>(nativeMsg, headers);
       
       restTemplate.postForEntity(
           getServiceUrl(MESSAGE_URL_NAME),
@@ -42,6 +49,24 @@ public class RestLedgerMessageService extends RestServiceBase {
       }
     }
     
+  }
+
+  protected MessageImpl mapToNative(Message msg) {
+    //we need this awkward method to map from human friendly commands into the REST format,
+    //no one wants to type in full urls for account names...
+    MessageImpl impl = new MessageImpl();
+    
+    impl.setFrom(urls.get("account").toString().replace(":name", msg.getFromAccount()));
+    impl.setTo(urls.get("account").toString().replace(":name", msg.getToAccount()));
+    impl.setLedger(urls.get("ledger").toString());
+    
+    //the ledger wants a json object as a convenience, for now...
+    Map<String, Object> data = new HashMap<>();
+    data.put("message", msg.getData());
+    
+    impl.setData(data);
+    
+    return impl;
   }
 
 }

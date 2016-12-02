@@ -1,13 +1,21 @@
 package org.interledger.ilp.ledger.client.commands;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.interledger.ilp.core.ledger.model.Message;
 import org.interledger.ilp.ledger.client.LedgerCommand;
+import org.interledger.ilp.ledger.model.impl.MessageImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MessageCommand extends LedgerCommand {
+  private static final Logger log = LoggerFactory.getLogger(MessageCommand.class);
 
   @Override
   protected String getCommand() {
@@ -35,6 +43,12 @@ public class MessageCommand extends LedgerCommand {
 
   @Override
   protected void runCommand(CommandLine cmd) throws Exception {
-    throw new Exception("Not implemented");
+    try {
+      MessageImpl m = new MessageImpl(cmd.getOptionValue("from"), cmd.getOptionValue("to"),
+          cmd.getOptionValue("data"));
+      ledgerClient.sendMessage(m);
+    } catch (Exception e) {
+      log.error("error sending message", e);
+    }
   }
 }

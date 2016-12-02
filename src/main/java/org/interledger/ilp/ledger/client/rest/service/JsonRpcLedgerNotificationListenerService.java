@@ -1,5 +1,8 @@
 package org.interledger.ilp.ledger.client.rest.service;
 
+import java.net.URI;
+import java.util.Map;
+
 import org.interledger.ilp.core.ledger.events.MessageEvent;
 import org.interledger.ilp.core.ledger.model.Notification;
 import org.interledger.ilp.core.ledger.service.LedgerNotificationListenerService;
@@ -13,23 +16,16 @@ import org.springframework.web.socket.client.WebSocketConnectionManager;
 
 public class JsonRpcLedgerNotificationListenerService implements LedgerNotificationListenerService {
 
-  private String connectionString;
+  public static final String WEBSOCKET_URL_NAME = "websocket";
+  
+  protected Map<String, URI> urls;
   private JsonRpcWebSocketClientHandler handler;
   private WebSocketConnectionManager connectionManager;
   
-  public JsonRpcLedgerNotificationListenerService(String connectionString,
+  public JsonRpcLedgerNotificationListenerService(Map<String, URI> urls,
       ApplicationEventPublisher publisher) {
-    this.connectionString = connectionString;
-    this.handler = new JsonRpcWebSocketClientHandler(publisher);
-  }
-  
-  @Override
-  public String getConnectionString() {
-    return connectionString;
-  }
-  
-  public void setConnectionString(String connectionString) {
-    this.connectionString = connectionString;
+    this.urls = urls;
+    this.handler = new JsonRpcWebSocketClientHandler(publisher);    
   }
   
   @Override
@@ -41,8 +37,13 @@ public class JsonRpcLedgerNotificationListenerService implements LedgerNotificat
   
   @Override
   public void connect() {
+    URI wsUri = urls.get(WEBSOCKET_URL_NAME);
+    if(wsUri == null || wsUri.getScheme() == null  || !wsUri.getScheme().startsWith("ws")) {
+      throw new RuntimeException("Invalid websocket URL: " + wsUri);
+    }
+
     JsonRpcWebsocketClient client = new JsonRpcWebsocketClient();
-    connectionManager = new WebSocketConnectionManager(client, handler, connectionString);
+    connectionManager = new WebSocketConnectionManager(client, handler, wsUri.toString());
     connectionManager.start();
   }
 
@@ -60,7 +61,8 @@ public class JsonRpcLedgerNotificationListenerService implements LedgerNotificat
     if (!isConnected()) {
       throw new Exception("Client is not connected.");
     }
-    JsonRpcRequest subReq = SubscribeRpcCallFactory.build("admin");
+    
+    JsonRpcRequest subReq = SubscribeRpcCallFactory.build(this.urls.get("account"), "admin");
     handler.sendRpcRequest(subReq);
   }
 

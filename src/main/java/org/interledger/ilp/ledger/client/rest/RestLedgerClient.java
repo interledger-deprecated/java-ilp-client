@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 public class RestLedgerClient implements LedgerClient, ApplicationContextAware {
 
   public static String LEDGER_URL_NAME = "ledger";
-  public static final String WEBSOCKET_URL_NAME = "websocket";
   private static final Logger log = LoggerFactory.getLogger(RestLedgerClient.class);
   
   private ApplicationContext context;
@@ -113,13 +112,8 @@ public class RestLedgerClient implements LedgerClient, ApplicationContextAware {
     
     if(this.notificationListenerService == null) {
       log.debug("Creating Notification Listener Service");
-      URI wsUri = urls.get(WEBSOCKET_URL_NAME);
       
-      if(wsUri == null || wsUri.getScheme() == null  || !wsUri.getScheme().startsWith("ws")) {
-        throw new Exception("Invalid websocket URL: " + wsUri);
-      }
-      
-      this.notificationListenerService = new JsonRpcLedgerNotificationListenerService(wsUri.toString(), context);
+      this.notificationListenerService = new JsonRpcLedgerNotificationListenerService(urls, context);
     }
     
     return this.notificationListenerService;
