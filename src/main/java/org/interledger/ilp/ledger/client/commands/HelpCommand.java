@@ -5,7 +5,6 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.interledger.ilp.ledger.client.LedgerCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -21,17 +20,17 @@ public class HelpCommand extends LedgerCommand implements ApplicationContextAwar
   private ApplicationContext applicationContext;
 
   @Override
-  protected String getCommand() {
+  public String getCommand() {
     return "help";
   }
 
   @Override
-  protected String getDescription() {
+  public String getDescription() {
     return "Get help on a command";
   }
 
   @Override
-  protected Options getOptions() {
+  public Options getOptions() {
     return new Options().addOption(Option.builder("c").argName("command").hasArg()
         .desc("Name of the command.").build());
   }

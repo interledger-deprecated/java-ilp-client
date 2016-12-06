@@ -8,18 +8,24 @@
 	<context:annotation-config/>
 	<context:property-placeholder ignore-unresolvable="true" null-value="" />
 	
-	<bean id="application" class="org.interledger.ilp.ledger.client.CommandlineApplication">
-    <!-- 	<property name="ledgerServiceFactory" ref="restLedgerServiceFactory"/>  -->
+	<bean id="application" class="org.interledger.ilp.ledger.client.Application">
 	</bean>
 
-	<bean id="restLedgerClient" class="org.interledger.ilp.ledger.client.rest.RestLedgerClient">
+	<!--  Load the REST adaptor -->
+	<bean id="restLedgerAdaptor" class="org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor">
     	<constructor-arg name="ledgerBaseUrl" value="${ledger.rest.url}"/>
     	<property name="accountAuthToken" ref="restCredentials"/>
+    	<property name="eventHandler" ref="restEventHandler"/>
 	</bean>	
 	
+	<!-- Setup REST calls to use BasicAuth -->
 	<bean id="restCredentials" class="org.springframework.security.authentication.UsernamePasswordAuthenticationToken">
     	<constructor-arg name="principal" value="${ledger.rest.username}"/>
     	<constructor-arg name="credentials" value="${ledger.rest.password}"/>
+	</bean>
+
+	<!-- Publish events via the ApplicationContext event publisher  -->
+	<bean id="restEventHandler" class="org.interledger.ilp.ledger.client.events.ApplicationEventPublishingLedgerEventHandler">
 	</bean>
 
 </beans>
