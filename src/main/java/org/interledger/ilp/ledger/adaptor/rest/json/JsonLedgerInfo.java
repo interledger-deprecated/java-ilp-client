@@ -64,8 +64,8 @@ public class JsonLedgerInfo implements LedgerInfo {
   }
 
   @Override
-  public URI getId() {
-    return id;
+  public String getId() {
+    return id == null ? null : id.toString();
   }
 
   @Override

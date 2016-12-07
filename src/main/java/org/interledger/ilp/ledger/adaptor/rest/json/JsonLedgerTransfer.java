@@ -4,9 +4,6 @@ import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
-import org.interledger.ilp.core.ledger.model.LedgerTransferAccountEntry;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -18,48 +15,36 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
-public class JsonLedgerTransfer implements LedgerTransfer {
+public class JsonLedgerTransfer {
 
-  private List<LedgerTransferAccountEntry> credits;
-  private List<LedgerTransferAccountEntry> debits;
+  private List<JsonLedgerTransferAccountEntry> credits;
+  private List<JsonLedgerTransferAccountEntry> debits;
   private String executionCondition;
   private String cancellationCondition;
   private ZonedDateTime expiresAt;
-  private String id;
+  private URI id;
   private URI ledgerId;
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getCredits()
-   */
   @JsonSerialize(contentAs = JsonLedgerTransferAccountEntry.class)
-  @Override
-  public List<LedgerTransferAccountEntry> getCredits() {
+  public List<JsonLedgerTransferAccountEntry> getCredits() {
     return credits;
   }
 
   @JsonDeserialize(contentAs = JsonLedgerTransferAccountEntry.class)
-  public void setCredits(List<LedgerTransferAccountEntry> credits) {
+  public void setCredits(List<JsonLedgerTransferAccountEntry> credits) {
     this.credits = credits;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getDebits()
-   */
   @JsonSerialize(contentAs = JsonLedgerTransferAccountEntry.class)
-  @Override
-  public List<LedgerTransferAccountEntry> getDebits() {
+  public List<JsonLedgerTransferAccountEntry> getDebits() {
     return debits;
   }
 
   @JsonDeserialize(contentAs = JsonLedgerTransferAccountEntry.class)
-  public void setDebits(List<LedgerTransferAccountEntry> debits) {
+  public void setDebits(List<JsonLedgerTransferAccountEntry> debits) {
     this.debits = debits;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getExecutionCondition()
-   */
-  @Override
   @JsonProperty("execution_condition")
   public String getExecutionCondition() {
     return executionCondition;
@@ -69,11 +54,6 @@ public class JsonLedgerTransfer implements LedgerTransfer {
   public void setExecutionCondition(String executionCondition) {
     this.executionCondition = executionCondition;
   }
-
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getCancellationCondition()
-   */
-  @Override
   @JsonProperty("cancellation_condition")
   public String getCancellationCondition() {
     return cancellationCondition;
@@ -84,10 +64,6 @@ public class JsonLedgerTransfer implements LedgerTransfer {
     this.cancellationCondition = cancellationCondition;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getExpiresAt()
-   */
-  @Override
   @JsonProperty("expires_at")
   public ZonedDateTime getExpiresAt() {
     return expiresAt;
@@ -98,30 +74,26 @@ public class JsonLedgerTransfer implements LedgerTransfer {
     this.expiresAt = expiresAt;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getId()
-   */
-  @Override
-  public String getId() {
+  @JsonProperty("id")
+  public URI getId() {
     return id;
   }
 
-  public void setId(String id) {
+  @JsonProperty("id")
+  public void setId(URI id) {
     this.id = id;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getLedger()
-   */
-  @Override
-  public URI getLedger() {
+  @JsonProperty("ledger")
+  public URI getLedgerId() {
     return ledgerId;
   }
 
-  public void setLedger(URI ledger) {
+  @JsonProperty("ledger")
+  public void setLedgerId(URI ledger) {
     this.ledgerId = ledger;
   }
-
+  
   @Override
   public String toString() {
     ObjectMapper mapper = new ObjectMapper();
@@ -131,4 +103,6 @@ public class JsonLedgerTransfer implements LedgerTransfer {
       throw new RuntimeException(jpe);
     }
   }
+
+
 }

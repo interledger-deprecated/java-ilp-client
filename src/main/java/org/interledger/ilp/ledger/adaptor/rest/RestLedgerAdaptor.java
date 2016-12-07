@@ -156,7 +156,7 @@ public class RestLedgerAdaptor implements LedgerAdaptor, ApplicationContextAware
         throw new RuntimeException("Invalid websocket URL: " + wsUri);
       }
       
-      this.websocketChannel = new JsonRpcLedgerWebSocketChannel(getLedgerInfo().getId(), wsUri, token, eventhandler);
+      this.websocketChannel = new JsonRpcLedgerWebSocketChannel(URI.create(getLedgerInfo().getId()), wsUri, token, eventhandler);
     }
     
     return this.websocketChannel;

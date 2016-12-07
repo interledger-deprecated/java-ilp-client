@@ -2,16 +2,14 @@ package org.interledger.ilp.ledger.adaptor.rest.json;
 
 import java.net.URI;
 
-import org.interledger.ilp.core.ledger.model.LedgerTransferAccountEntry;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
-public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntry {
+public class JsonLedgerTransferAccountEntry {
 
   private URI account;
   private String amount;
@@ -21,10 +19,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
   private Boolean rejected;
   private String rejectionMessage;
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#getAccount()
-   */
-  @Override
   public URI getAccount() {
     return account;
   }
@@ -33,10 +27,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
     this.account = account;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#getAmount()
-   */
-  @Override
   public String getAmount() {
     return amount;
   }
@@ -45,10 +35,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
     this.amount = amount;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#isAuthorized()
-   */
-  @Override
   public Boolean isAuthorized() {
     return authorized;
   }
@@ -57,10 +43,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
     this.authorized = Boolean.valueOf(authorized);
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#getInvoice()
-   */
-  @Override
   public URI getInvoice() {
     return invoice;
   }
@@ -69,10 +51,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
     this.invoice = invoice;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#getMemo()
-   */
-  @Override
   public Object getMemo() {
     return memo;
   }
@@ -81,10 +59,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
     this.memo = memo;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#isRejected()
-   */
-  @Override
   public Boolean isRejected() {
     return rejected;
   }
@@ -93,10 +67,6 @@ public class JsonLedgerTransferAccountEntry implements LedgerTransferAccountEntr
     this.rejected = Boolean.valueOf(rejected);
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransferAccountEntry#getRejectionMessage()
-   */
-  @Override
   @JsonProperty("rejection_message")
   public String getRejectionMessage() {
     return rejectionMessage;

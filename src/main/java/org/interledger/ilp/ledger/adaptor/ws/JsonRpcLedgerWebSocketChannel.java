@@ -2,11 +2,11 @@ package org.interledger.ilp.ledger.adaptor.ws;
 
 import java.net.URI;
 
-import org.interledger.ilp.core.ledger.events.LedgerEvent;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
 import org.interledger.ilp.core.ledger.events.LedgerEventSource;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerMessage;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
+import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransferAccountEntry;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcMessage;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcNotification;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcNotificationParams;
@@ -16,6 +16,7 @@ import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcResponse;
 import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerMessageEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerTransferEvent;
+import org.interledger.ilp.ledger.client.model.ClientLedgerTransfer;
 import org.springframework.web.socket.CloseStatus;
 
 public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel implements LedgerEventSource {
@@ -44,7 +45,7 @@ public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel imple
       
       if(notificatonParams instanceof JsonRpcRequestTransferNotificationParams) {
         JsonLedgerTransfer transfer = ((JsonRpcRequestTransferNotificationParams) notificatonParams).getTransfer();
-        eventHandler.handleLedgerEvent(new ClientLedgerTransferEvent(this, transfer));
+        eventHandler.handleLedgerEvent(new ClientLedgerTransferEvent(this, buildClientLedgerTransfer(transfer)));
       } else if(notificatonParams instanceof JsonRpcRequestMessageNotificationParams) {
         JsonLedgerMessage msg = ((JsonRpcRequestMessageNotificationParams) notificatonParams).getMessage();
         eventHandler.handleLedgerEvent(new ClientLedgerMessageEvent(this, msg));
@@ -80,6 +81,38 @@ public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel imple
     return this.ledgerId;
   }
   
-  
+  //TODO Extract to stand-alone converter service
+  private ClientLedgerTransfer buildClientLedgerTransfer(JsonLedgerTransfer jsonTransfer) {
+    
+    if(jsonTransfer.getCredits().size() != 1 || jsonTransfer.getDebits().size() != 1) {
+      throw new RuntimeException("Only single transaction transfers are supported.");
+    }
+    
+    JsonLedgerTransferAccountEntry creditEntry = jsonTransfer.getCredits().get(0);
+    JsonLedgerTransferAccountEntry debitEntry = jsonTransfer.getDebits().get(0);
+    
+    ClientLedgerTransfer transfer = new ClientLedgerTransfer();
+    transfer.setId(jsonTransfer.getId().toString());
+    transfer.setLedgerId(jsonTransfer.getLedgerId().toString());
+    
+    transfer.setToAccount(creditEntry.getAccount().toString());
+
+    //FIXME Should we check that there are no inconsistencies between the debit and credit entries
+    transfer.setFromAccount(debitEntry.getAccount().toString());
+    transfer.setAmount(debitEntry.getAmount());
+    transfer.setAuthorized(debitEntry.isAuthorized());
+    if(debitEntry.getInvoice() != null) {
+      transfer.setInvoice(debitEntry.getInvoice().toString());
+    }
+    transfer.setMemo(debitEntry.getMemo());
+    transfer.setRejected(debitEntry.isRejected());
+    transfer.setRejectionMessage(debitEntry.getRejectionMessage());
+    
+    transfer.setCancellationCondition(jsonTransfer.getCancellationCondition());
+    transfer.setExecutionCondition(jsonTransfer.getExecutionCondition());
+    transfer.setExpiresAt(jsonTransfer.getExpiresAt());
+
+    return transfer;
+  }
 
 }

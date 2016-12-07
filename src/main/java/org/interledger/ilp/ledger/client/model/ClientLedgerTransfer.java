@@ -1,107 +1,130 @@
 package org.interledger.ilp.ledger.client.model;
 
-import java.net.URI;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
-import org.interledger.ilp.core.ledger.model.LedgerTransferAccountEntry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientLedgerTransfer implements LedgerTransfer {
 
-  private List<LedgerTransferAccountEntry> credits;
-  private List<LedgerTransferAccountEntry> debits;
+  private String id;
+  private String ledgerId;
+  private String fromAccount;
+  private String toAccount;
+  private String amount;
+  private boolean authorized;
+  private String invoice;
+  private Object memo;
   private String executionCondition;
   private String cancellationCondition;
   private ZonedDateTime expiresAt;
-  private String id;
-  private URI ledgerId;
+  private boolean rejected;
+  private String rejectionMessage;
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getCredits()
-   */
-  @Override
-  public List<LedgerTransferAccountEntry> getCredits() {
-    return credits;
+  public String getId() {
+    return id;
   }
 
-  public void setCredits(List<LedgerTransferAccountEntry> credits) {
-    this.credits = credits;
+  public String getLedgerId() {
+    return ledgerId;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getDebits()
-   */
-  @Override
-  public List<LedgerTransferAccountEntry> getDebits() {
-    return debits;
+  public String getFromAccount() {
+    return fromAccount;
   }
 
-  public void setDebits(List<LedgerTransferAccountEntry> debits) {
-    this.debits = debits;
+  public String getToAccount() {
+    return toAccount;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getExecutionCondition()
-   */
-  @Override
+  public String getAmount() {
+    return amount;
+  }
+
+  public boolean isAuthorized() {
+    return authorized;
+  }
+
+  public String getInvoice() {
+    return invoice;
+  }
+
+  public Object getMemo() {
+    return memo;
+  }
+
   public String getExecutionCondition() {
     return executionCondition;
   }
 
-  public void setExecutionCondition(String executionCondition) {
-    this.executionCondition = executionCondition;
-  }
-
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getCancellationCondition()
-   */
-  @Override
   public String getCancellationCondition() {
     return cancellationCondition;
   }
 
-  public void setCancellationCondition(String cancellationCondition) {
-    this.cancellationCondition = cancellationCondition;
-  }
-
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getExpiresAt()
-   */
-  @Override
   public ZonedDateTime getExpiresAt() {
     return expiresAt;
   }
 
-  public void setExpiresAt(ZonedDateTime expiresAt) {
-    this.expiresAt = expiresAt;
+  public boolean isRejected() {
+    return rejected;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getId()
-   */
-  @Override
-  public String getId() {
-    return id;
+  public String getRejectionMessage() {
+    return rejectionMessage;
   }
 
   public void setId(String id) {
     this.id = id;
   }
 
-  /* (non-Javadoc)
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerTransfer#getLedger()
-   */
-  @Override
-  public URI getLedger() {
-    return ledgerId;
+  public void setLedgerId(String ledgerId) {
+    this.ledgerId = ledgerId;
   }
 
-  public void setLedger(URI ledgerId) {
-    this.ledgerId = ledgerId;
+  public void setFromAccount(String fromAccount) {
+    this.fromAccount = fromAccount;
+  }
+
+  public void setToAccount(String toAccount) {
+    this.toAccount = toAccount;
+  }
+
+  public void setAmount(String amount) {
+    this.amount = amount;
+  }
+
+  public void setAuthorized(boolean authorized) {
+    this.authorized = authorized;
+  }
+
+  public void setInvoice(String invoice) {
+    this.invoice = invoice;
+  }
+
+  public void setMemo(Object memo) {
+    this.memo = memo;
+  }
+
+  public void setExecutionCondition(String executionCondition) {
+    this.executionCondition = executionCondition;
+  }
+
+  public void setCancellationCondition(String cancellationCondition) {
+    this.cancellationCondition = cancellationCondition;
+  }
+
+  public void setExpiresAt(ZonedDateTime expiresAt) {
+    this.expiresAt = expiresAt;
+  }
+
+  public void setRejected(boolean rejected) {
+    this.rejected = rejected;
+  }
+
+  public void setRejectionMessage(String rejectionMessage) {
+    this.rejectionMessage = rejectionMessage;
   }
 
   @Override

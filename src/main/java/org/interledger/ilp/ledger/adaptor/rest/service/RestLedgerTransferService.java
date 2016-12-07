@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
-import org.interledger.ilp.core.ledger.model.LedgerTransferAccountEntry;
 import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
@@ -43,8 +42,8 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
       //FIXME - This is ugly. We use the transfer's ID as the URI instead of adding the ID to the endpoint URL
       //URI uri = new UriTemplate(getServiceUrl(TRANSFER_URL_NAME)).expand(transfer.getId());
       URI uri = URI.create(transfer.getId());
-      RequestEntity<LedgerTransfer> request = RequestEntity.put(uri)
-          .contentType(MediaType.APPLICATION_JSON_UTF8).body(jsonTransfer, LedgerTransfer.class);
+      RequestEntity<JsonLedgerTransfer> request = RequestEntity.put(uri)
+          .contentType(MediaType.APPLICATION_JSON_UTF8).body(jsonTransfer, JsonLedgerTransfer.class);
       ResponseEntity<JsonLedgerTransfer> rsp = restTemplate.exchange(request,
           JsonLedgerTransfer.class);
 
@@ -95,44 +94,35 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
   
   protected JsonLedgerTransfer buildJsonTransfer(LedgerTransfer transfer) {
     
-    JsonLedgerTransfer jsonTransfer = new JsonLedgerTransfer();
-    jsonTransfer.setId(transfer.getId());
+    //TODO Validate that ids are URIs before we try to convert them
     
-    //Should we get this from the adaptor?
-    jsonTransfer.setLedger(transfer.getLedger());
+    JsonLedgerTransfer jsonTransfer = new JsonLedgerTransfer();
+    jsonTransfer.setId(URI.create(transfer.getId()));
+    
+    //FIXME Should we get this from the adaptor or at least compare with the adaptor?
+    jsonTransfer.setLedgerId(URI.create(transfer.getLedgerId()));
 
-    List<LedgerTransferAccountEntry> credits = new LinkedList<>();
-    for (LedgerTransferAccountEntry entry : transfer.getCredits()) {
-      JsonLedgerTransferAccountEntry jsonEntry = new JsonLedgerTransferAccountEntry();
-      jsonEntry.setAccount(entry.getAccount());
-      jsonEntry.setAmount(entry.getAmount());
-      jsonEntry.setAuthorized(entry.isAuthorized());
-      jsonEntry.setInvoice(entry.getInvoice());
-      jsonEntry.setMemo(entry.getMemo());
-      jsonEntry.setRejected(entry.isRejected());
-      jsonEntry.setRejectionMessage(entry.getRejectionMessage());
-      credits.add(jsonEntry);
-    }
+    List<JsonLedgerTransferAccountEntry> credits = new LinkedList<>();
+    JsonLedgerTransferAccountEntry jsonCreditEntry = new JsonLedgerTransferAccountEntry();
+    jsonCreditEntry.setAccount(URI.create(transfer.getToAccount()));
+    jsonCreditEntry.setAmount(transfer.getAmount());
+    jsonCreditEntry.setMemo(transfer.getMemo());
+    credits.add(jsonCreditEntry);
     jsonTransfer.setCredits(credits);
     
-    List<LedgerTransferAccountEntry> debits = new LinkedList<>();
-    for (LedgerTransferAccountEntry entry : transfer.getDebits()) {
-      JsonLedgerTransferAccountEntry jsonEntry = new JsonLedgerTransferAccountEntry();
-      jsonEntry.setAccount(entry.getAccount());
-      jsonEntry.setAmount(entry.getAmount());
-      jsonEntry.setAuthorized(entry.isAuthorized());
-      jsonEntry.setInvoice(entry.getInvoice());
-      jsonEntry.setMemo(entry.getMemo());
-      jsonEntry.setRejected(entry.isRejected());
-      jsonEntry.setRejectionMessage(entry.getRejectionMessage());
-      debits.add(jsonEntry);
-    }
+    List<JsonLedgerTransferAccountEntry> debits = new LinkedList<>();
+    JsonLedgerTransferAccountEntry jsonDebitEntry = new JsonLedgerTransferAccountEntry();
+    jsonDebitEntry.setAccount(URI.create(transfer.getFromAccount()));
+    jsonDebitEntry.setAmount(transfer.getAmount());
+    jsonDebitEntry.setMemo(transfer.getMemo());
+    jsonDebitEntry.setAuthorized(true);
+    debits.add(jsonDebitEntry);
     jsonTransfer.setDebits(debits);
     
     jsonTransfer.setCancellationCondition(transfer.getCancellationCondition());
     jsonTransfer.setExecutionCondition(transfer.getExecutionCondition());
     jsonTransfer.setExpiresAt(transfer.getExpiresAt());
-    
+
     return jsonTransfer;
     
   }
