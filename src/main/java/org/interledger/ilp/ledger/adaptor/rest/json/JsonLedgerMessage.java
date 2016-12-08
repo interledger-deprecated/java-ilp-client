@@ -3,6 +3,7 @@ package org.interledger.ilp.ledger.adaptor.rest.json;
 import org.interledger.ilp.core.ledger.model.LedgerMessage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 
 public class JsonLedgerMessage implements LedgerMessage{
 
@@ -23,6 +24,8 @@ public class JsonLedgerMessage implements LedgerMessage{
     return this.to;
   }
 
+  //TODO This is here until we extend the Message for different forms of data
+  @JsonRawValue
   @Override
   public Object getData() {
     return this.data;

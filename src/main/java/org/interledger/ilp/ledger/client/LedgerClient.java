@@ -1,7 +1,9 @@
 package org.interledger.ilp.ledger.client;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,7 +11,7 @@ import org.interledger.cryptoconditions.Condition;
 import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.core.ledger.events.LedgerEvent;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.ledger.client.events.ApplicationEventPublishingLedgerEventHandler;
+import org.interledger.ilp.core.ledger.model.ConnectorInfo;
 import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerErrorEvent;
 import org.interledger.ilp.ledger.client.model.ClientLedgerTransfer;
@@ -17,14 +19,12 @@ import org.interledger.ilp.ledger.client.model.ClientQuoteQuery;
 import org.interledger.ilp.ledger.client.model.ClientQuoteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.event.EventListener;
 
-public class LedgerClient implements ApplicationEventPublisherAware {
+public class LedgerClient {
 
   private static final Logger log = LoggerFactory.getLogger(LedgerClient.class);
 
+  //Connectors <name, localAccountId>
   private Map<String, String> connectors;
   
   private LedgerAdaptor adaptor;
@@ -32,6 +32,13 @@ public class LedgerClient implements ApplicationEventPublisherAware {
   private String account;
   
   private boolean isConnecting = false;
+  
+  public LedgerClient(LedgerAdaptor adaptor, String account, Map<String, String> connectors, LedgerEventHandler eventHandler) {
+    this.adaptor = adaptor;
+    this.account = account;
+    this.connectors = connectors;
+    this.eventHandler = new LedgerEventProxy(eventHandler);
+  }  
   
   public void connect() throws Exception {
     
@@ -58,6 +65,8 @@ public class LedgerClient implements ApplicationEventPublisherAware {
 
   public ClientQuoteResponse requestQuote(ClientQuoteQuery query) throws Exception {
 
+    throwIfNotConnected();
+    
     // TODO validate
     
     //Local transfer
@@ -78,6 +87,7 @@ public class LedgerClient implements ApplicationEventPublisherAware {
     if(query.getConnectors() != null && query.getConnectors().size() > 1) {
       connectors.addAll(query.getConnectors());
     } else {
+      //TODO Possibly not desired behaviour
       connectors.addAll(this.connectors.values());
     }
     
@@ -106,26 +116,65 @@ public class LedgerClient implements ApplicationEventPublisherAware {
     return null;
   }
 
-  @EventListener
-  public void onLedgerEvent(LedgerEvent event) {
-    if(event instanceof ClientLedgerConnectEvent) {
-      isConnecting = false;
+  private void onLedgerConnected(ClientLedgerConnectEvent event) {
+    
+    if(connectors == null || connectors.size() == 0) {
       
-      //Subscribe to account events
+      connectors = new HashMap<String, String>();
+      
+      //Get connectors from ledger if required
+      //TODO: Log connectors from ledger that are not in local list (Warning?)
+      List<ConnectorInfo> ledgerConnectors;
       try {
-        adaptor.getAccountService().subscribeToAccountNotifications(account);
+        ledgerConnectors = adaptor.getLedgerInfo().getConnectors();
+        for (ConnectorInfo connector : ledgerConnectors) {
+          connectors.put(connector.getName(), connector.getId());
+        }
       } catch (Exception e) {
         eventHandler.handleLedgerEvent(new ClientLedgerErrorEvent(this, e));
-        e.printStackTrace();
       }
-      
     }
     
+    //Subscribe to account events
+    try {
+      adaptor.getAccountService().subscribeToAccountNotifications(account);
+    } catch (Exception e) {
+      eventHandler.handleLedgerEvent(new ClientLedgerErrorEvent(this, e));
+    }
+    
+    isConnecting = false;
+
   }
   
-  @Override
-  public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-    this.eventHandler = new ApplicationEventPublishingLedgerEventHandler(applicationEventPublisher);
+  private void throwIfNotConnected() {
+    if(isConnecting) {
+      throw new RuntimeException("Client is currently connecting.");
+    }
+    if(!isConnected()) {
+      throw new RuntimeException("Client is not connected.");
+    }
+  }
+  
+  private class LedgerEventProxy implements LedgerEventHandler {
+
+    private LedgerEventHandler proxiedHandler;
+    
+    public LedgerEventProxy(LedgerEventHandler eventHandler) {
+      this.proxiedHandler = eventHandler;
+    }
+    
+    @Override
+    public void handleLedgerEvent(LedgerEvent event) {
+      
+      if(proxiedHandler != null) {
+        proxiedHandler.handleLedgerEvent(event);
+      }
+      
+      //Internal Logic
+      if(event instanceof ClientLedgerConnectEvent) {
+        onLedgerConnected((ClientLedgerConnectEvent) event);
+      }      
+    }
   }
   
   

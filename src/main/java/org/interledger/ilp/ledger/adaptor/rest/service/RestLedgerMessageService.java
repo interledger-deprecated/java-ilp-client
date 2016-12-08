@@ -1,12 +1,16 @@
 package org.interledger.ilp.ledger.adaptor.rest.service;
 
+import java.net.URI;
+
 import org.interledger.ilp.core.ledger.model.LedgerMessage;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerMessage;
+import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,12 +26,10 @@ public class RestLedgerMessageService extends RestServiceBase {
 
       log.debug("POST message");
       
-//      LedgerMessage nativeMsg = mapToNative(msg);
-      
-      HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.APPLICATION_JSON);
-      
-      HttpEntity<LedgerMessage> request = new HttpEntity<LedgerMessage>(msg, headers);
+      RequestEntity<LedgerMessage> request = RequestEntity.post(
+            URI.create(getServiceUrl(ServiceUrls.MESSAGE)))
+          .contentType(MediaType.APPLICATION_JSON_UTF8)
+          .body(msg, JsonLedgerMessage.class);
       
       restTemplate.postForEntity(
           getServiceUrl(ServiceUrls.MESSAGE),
