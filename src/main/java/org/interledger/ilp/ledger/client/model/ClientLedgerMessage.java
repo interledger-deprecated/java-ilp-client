@@ -5,9 +5,9 @@ import org.interledger.ilp.core.ledger.model.LedgerMessage;
 public class ClientLedgerMessage implements LedgerMessage {
 
   private String ledger;
-  private String fromAccount;
-  private String toAccount;
-  private String data;
+  private String from;
+  private String to;
+  private Object data;
 
   @Override
   public String getLedger() {
@@ -15,13 +15,13 @@ public class ClientLedgerMessage implements LedgerMessage {
   }
   
   @Override
-  public String getFromAccount() {
-    return this.fromAccount;
+  public String getFrom() {
+    return this.from;
   }
 
   @Override
-  public String getToAccount() {
-    return this.toAccount;
+  public String getTo() {
+    return this.to;
   }
 
   @Override
@@ -33,15 +33,15 @@ public class ClientLedgerMessage implements LedgerMessage {
     this.ledger = ledger;
   }
 
-  public void setFromAccount(String fromAccount) {
-    this.fromAccount = fromAccount;
+  public void setFrom(String from) {
+    this.from = from;
   }
 
-  public void setToAccount(String toAccount) {
-    this.toAccount = toAccount;
+  public void setTo(String to) {
+    this.to = to;
   }
 
-  public void setData(String data) {
+  public void setData(Object data) {
     this.data = data;
   }
 

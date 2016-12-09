@@ -12,15 +12,17 @@ public class JsonLedgerMessage implements LedgerMessage{
   private Object data;
   private String ledger;
 
+  private String account;
+  
   @JsonProperty(value="from")
   @Override
-  public String getFromAccount() {
+  public String getFrom() {
     return this.from;
   }
 
   @JsonProperty(value="to")
   @Override
-  public String getToAccount() {
+  public String getTo() {
     return this.to;
   }
 
@@ -36,11 +38,11 @@ public class JsonLedgerMessage implements LedgerMessage{
     return this.ledger;
   }
 
-  public void setFromAccount(String from) {
+  public void setFrom(String from) {
     this.from = from;
   }
 
-  public void setToAccount(String to) {
+  public void setTo(String to) {
     this.to = to;
   }
 
@@ -51,5 +53,14 @@ public class JsonLedgerMessage implements LedgerMessage{
   public void setLedger(String ledger) {
     this.ledger = ledger;
   }
-
+  
+  @Deprecated
+  public String getAccount() {
+    return account;
+  }
+  
+  @Deprecated
+  public void setAccount(String account) {
+    this.account = account;
+  }
 }
