@@ -1,8 +1,12 @@
 package org.interledger.ilp.ledger.client.commands;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.ledger.client.model.ClientLedgerMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +44,15 @@ public class MessageCommand extends LedgerCommand {
   protected void runCommand(CommandLine cmd) throws Exception {
     try {
       ClientLedgerMessage m = new ClientLedgerMessage();
-          m.setFromAccount(cmd.getOptionValue("from"));
-          m.setToAccount(cmd.getOptionValue("to"));
-          m.setData(cmd.getOptionValue("data"));
+          m.setLedger(cmd.getOptionValue("destination"));
+          m.setFrom(cmd.getOptionValue("from"));
+          m.setTo(cmd.getOptionValue("to"));
+          //FIXME: the ledger message wants data to be an *object* in the json sense of the word, 
+          //we use a map for convenience
+          Map<String, String> payload = new HashMap<>();
+          payload.put("message", cmd.getOptionValue("data"));
+          m.setData(payload);
+          
       ledgerClient.sendMessage(m);
     } catch (Exception e) {
       log.error("error sending message", e);

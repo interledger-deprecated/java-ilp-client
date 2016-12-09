@@ -7,12 +7,11 @@ import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerMessage;
-import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriTemplate;
 
 public class RestLedgerMessageService extends RestServiceBase {
 
@@ -26,10 +25,16 @@ public class RestLedgerMessageService extends RestServiceBase {
 
       log.debug("POST message");
       
+      //TODO: not sure if this is correct or not - can we treat from and to accounts as placeholders
+      //to wrap into REST account uri's? What about setting the ledger - can you send messages 
+      //across ledgers? (at the moment we simply ignore the ledger setting in LedgerMessage and use
+      //the REST ledger url).
+      JsonLedgerMessage jsonMessage = buildJsonLedgerMessage(msg);
+      
       RequestEntity<LedgerMessage> request = RequestEntity.post(
             URI.create(getServiceUrl(ServiceUrls.MESSAGE)))
           .contentType(MediaType.APPLICATION_JSON_UTF8)
-          .body(msg, JsonLedgerMessage.class);
+          .body(jsonMessage, JsonLedgerMessage.class);
       
       restTemplate.postForEntity(
           getServiceUrl(ServiceUrls.MESSAGE),
@@ -48,24 +53,15 @@ public class RestLedgerMessageService extends RestServiceBase {
     
   }
 
-  /*
-  protected MessageImpl mapToNative(Message msg) {
-    //we need this awkward method to map from human friendly commands into the REST format,
-    //no one wants to type in full urls for account names...
-    MessageImpl impl = new MessageImpl();
+  protected JsonLedgerMessage buildJsonLedgerMessage(LedgerMessage message) {
+    JsonLedgerMessage jsonMessage = new JsonLedgerMessage();
     
-    impl.setFrom(urls.get("account").toString().replace(":name", msg.getFromAccount()));
-    impl.setTo(urls.get("account").toString().replace(":name", msg.getToAccount()));
-    impl.setLedger(urls.get("ledger").toString());
+    jsonMessage.setLedger(getServiceUrl(ServiceUrls.LEDGER));
+    jsonMessage.setFrom(new UriTemplate(getServiceUrl(ServiceUrls.ACCOUNT)).expand(message.getFrom()).toString());
+    jsonMessage.setTo(new UriTemplate(getServiceUrl(ServiceUrls.ACCOUNT)).expand(message.getTo()).toString());
+    jsonMessage.setData(message.getData());
     
-    //the ledger wants a json object as a convenience, for now...
-    Map<String, Object> data = new HashMap<>();
-    data.put("message", msg.getData());
-    
-    impl.setData(data);
-    
-    return impl;
+    return jsonMessage;
   }
-  */
 
 }
