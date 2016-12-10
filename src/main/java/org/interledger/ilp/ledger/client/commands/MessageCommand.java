@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Component
 public class MessageCommand extends LedgerCommand {
   private static final Logger log = LoggerFactory.getLogger(MessageCommand.class);
@@ -47,11 +49,17 @@ public class MessageCommand extends LedgerCommand {
           m.setLedger(cmd.getOptionValue("destination"));
           m.setFrom(cmd.getOptionValue("from"));
           m.setTo(cmd.getOptionValue("to"));
-          //FIXME: the ledger message wants data to be an *object* in the json sense of the word, 
-          //we use a map for convenience
+          
+          //FIXME: the ledger message wants data to be an *object* in the json sense of the word.
+          //Since the payload is opaque, it is handled as a 'raw' json type and injected directly
+          //as a json string (this is partly to bring some sanity to deserialization.
+          
           Map<String, String> payload = new HashMap<>();
           payload.put("message", cmd.getOptionValue("data"));
-          m.setData(payload);
+          
+          ObjectMapper mapper = new ObjectMapper();
+          
+          m.setData(mapper.writeValueAsString(payload));
           
       ledgerClient.sendMessage(m);
     } catch (Exception e) {

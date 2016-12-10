@@ -11,6 +11,7 @@ import org.interledger.ilp.ledger.client.commands.LedgerCommand;
 import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerMessageEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerTransferEvent;
+import org.interledger.ilp.ledger.client.model.ClientQuoteQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -21,6 +22,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 @SpringBootApplication
@@ -95,8 +98,24 @@ public class Application implements CommandLineRunner, ApplicationContextAware{
       log.info("Transfer: {}", ((ClientLedgerTransferEvent) event).getTransfer().toString());
     }
     
-    if(event instanceof ClientLedgerMessageEvent) {
+    if (event instanceof ClientLedgerMessageEvent) {
       log.info("Message: {}", ((ClientLedgerMessageEvent) event).getMessage().toString());
+
+      Object messageData = ((ClientLedgerMessageEvent) event).getMessage().getData();
+
+      // jackson will deserialize json objects into maps if no type info is available.
+      if (messageData instanceof Map) {
+        try {
+          // FIXME: it would be nice if the messages were somewhat less opaque, so that clients
+          // could
+          // more easily know what to expect.
+          ObjectMapper mapper = new ObjectMapper();
+          ClientQuoteQuery quote = mapper.convertValue(messageData, ClientQuoteQuery.class);
+          log.info("Message was a quote: {}", quote);
+        } catch (IllegalArgumentException e) {
+          // oops, not a quote after all..
+        }
+      }
     }
     
     if(event instanceof ClientLedgerConnectEvent) {

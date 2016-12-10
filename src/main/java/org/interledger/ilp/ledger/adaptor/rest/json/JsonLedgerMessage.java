@@ -5,13 +5,17 @@ import org.interledger.ilp.core.ledger.model.LedgerMessage;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 
 @JsonInclude(Include.NON_NULL)
 public class JsonLedgerMessage implements LedgerMessage {
 
   private String from;
   private String to;
+  
+  @JsonRawValue
   private Object data;
+  
   private String ledger;
 
   private String account;

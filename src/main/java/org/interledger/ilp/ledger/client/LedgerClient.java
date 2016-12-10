@@ -6,16 +6,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.interledger.cryptoconditions.Condition;
 import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.core.ledger.events.LedgerEvent;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
 import org.interledger.ilp.core.ledger.model.ConnectorInfo;
+import org.interledger.ilp.core.ledger.model.LedgerMessage;
 import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerErrorEvent;
+import org.interledger.ilp.ledger.client.model.ClientLedgerMessage;
 import org.interledger.ilp.ledger.client.model.ClientLedgerTransfer;
 import org.interledger.ilp.ledger.client.model.ClientQuoteQuery;
+import org.interledger.ilp.ledger.client.model.ClientQuoteQueryParams;
 import org.interledger.ilp.ledger.client.model.ClientQuoteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +67,7 @@ public class LedgerClient {
     
   }
 
-  public ClientQuoteResponse requestQuote(ClientQuoteQuery query) throws Exception {
+  public ClientQuoteResponse requestQuote(ClientQuoteQueryParams query) throws Exception {
 
     throwIfNotConnected();
     
@@ -99,8 +103,20 @@ public class LedgerClient {
     return findBestQuote(responses);
   }
   
-  private ClientQuoteResponse requestQuoteFromConnector(String connector, ClientQuoteQuery query) {
-    //TODO Implement
+  private ClientQuoteResponse requestQuoteFromConnector(String connector, ClientQuoteQueryParams query) throws Exception {
+    
+    ClientQuoteQuery quote = new ClientQuoteQuery();
+    quote.setData(query);
+    quote.setId(UUID.randomUUID().toString());
+    quote.setMethod("quote_request");
+    
+    ClientLedgerMessage message = new ClientLedgerMessage();
+    message.setData(quote);
+    message.setFrom(account);
+    message.setTo(connector);
+    adaptor.sendMessage(message);
+    
+    //oh dear, send message is inherently async...
     return null;
   }
   

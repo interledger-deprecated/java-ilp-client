@@ -69,7 +69,7 @@ public class JsonLedgerInfo implements LedgerInfo {
   }
 
   @Override
-  @JsonProperty(value = "ilp_prefix")
+  @JsonProperty(value = "ilp_prefix") //FIXME: super confusing, why isnt it IlpPrefix?
   public String getLedgerPrefix() {
     return this.ledgerPrefix;
   }
