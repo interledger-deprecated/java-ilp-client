@@ -24,6 +24,8 @@ import org.interledger.ilp.ledger.client.model.ClientQuoteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class LedgerClient {
 
   private static final Logger log = LoggerFactory.getLogger(LedgerClient.class);
@@ -88,7 +90,7 @@ public class LedgerClient {
     }
     
     Set<String> connectors = new HashSet<>();
-    if(query.getConnectors() != null && query.getConnectors().size() > 1) {
+    if(query.getConnectors() != null && query.getConnectors().size() > 0) {
       connectors.addAll(query.getConnectors());
     } else {
       //TODO Possibly not desired behaviour
@@ -111,7 +113,11 @@ public class LedgerClient {
     quote.setMethod("quote_request");
     
     ClientLedgerMessage message = new ClientLedgerMessage();
-    message.setData(quote);
+    
+    //FIXME: we must overcome the horrible, horrible json mapping stuff somehow...
+    ObjectMapper mapper = new ObjectMapper();
+    message.setData(mapper.writeValueAsString(quote));
+
     message.setFrom(account);
     message.setTo(connector);
     adaptor.sendMessage(message);

@@ -2,6 +2,7 @@ package org.interledger.ilp.ledger.client.commands;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,6 +39,9 @@ public class GetQuoteCommand extends LedgerCommand {
             Option.builder("destAmount").argName("destination amount").hasArg()
             .desc("Destination Amount").build())
         .addOption(
+            Option.builder("sourceAddress").argName("source address").hasArg()
+            .desc("Source Ledger").build())
+        .addOption(
             Option.builder("destAddress").argName("destination address").hasArg().required()
             .desc("Recipients Ledger").build())
         .addOption(Option.builder("connector").argName("connector").hasArg().required()
@@ -48,11 +52,12 @@ public class GetQuoteCommand extends LedgerCommand {
   @Override
   protected void runCommand(CommandLine cmd) throws Exception {
     ClientQuoteQueryParams quoteParams = new ClientQuoteQueryParams();
+    quoteParams.setSourceAddress(cmd.getOptionValue("sourceAddress"));
     quoteParams.setSourceAmount(cmd.getOptionValue("sourceAmount"));
     quoteParams.setDestinationAmount(cmd.getOptionValue("destAmount"));
     quoteParams.setDestinationAddress(cmd.getOptionValue("destAddress"));
 
-    Set<String> connectors = Collections.emptySet();
+    Set<String> connectors = new HashSet<String>();
     connectors.add(cmd.getOptionValue("connector"));
     quoteParams.setConnectors(connectors);
     
