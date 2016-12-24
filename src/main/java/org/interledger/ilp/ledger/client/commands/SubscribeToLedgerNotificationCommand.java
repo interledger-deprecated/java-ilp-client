@@ -3,7 +3,6 @@ package org.interledger.ilp.ledger.client.commands;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.interledger.ilp.core.ledger.service.LedgerAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,10 +35,8 @@ public class SubscribeToLedgerNotificationCommand extends LedgerCommand {
 
   @Override
   protected void runCommand(CommandLine cmd) throws Exception {
-    log.debug("Getting listener service.");
-    LedgerAccountService service = ledgerClient.getAccountService();
     
     log.debug("Subscribing to account notification...");
-    service.subscribeToAccountNotifications(cmd.getOptionValue("account"));
+    ledgerClient.getAdaptor().subscribeToAccountNotifications(cmd.getOptionValue("account"));
   }
 }

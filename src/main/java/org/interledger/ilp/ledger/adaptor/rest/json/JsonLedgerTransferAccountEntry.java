@@ -13,10 +13,10 @@ public class JsonLedgerTransferAccountEntry {
 
   private URI account;
   private String amount;
-  private Boolean authorized;
+  private boolean authorized;
   private URI invoice;
   private Object memo;
-  private Boolean rejected;
+  private boolean rejected;
   private String rejectionMessage;
 
   public URI getAccount() {
@@ -35,7 +35,7 @@ public class JsonLedgerTransferAccountEntry {
     this.amount = amount;
   }
 
-  public Boolean isAuthorized() {
+  public boolean isAuthorized() {
     return authorized;
   }
 
@@ -59,7 +59,7 @@ public class JsonLedgerTransferAccountEntry {
     this.memo = memo;
   }
 
-  public Boolean isRejected() {
+  public boolean isRejected() {
     return rejected;
   }
 

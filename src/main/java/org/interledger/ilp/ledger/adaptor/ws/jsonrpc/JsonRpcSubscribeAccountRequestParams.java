@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class JsonRpcSubscribeAccountRequestParams {
+public class JsonRpcSubscribeAccountRequestParams implements JsonRpcRequestParams {
     
   private List<URI> accounts;  
   private String eventType;

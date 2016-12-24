@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(as=JsonRpcNotification.class)
-public class JsonRpcNotification extends JsonRpcRequest {
+public class JsonRpcNotification extends JsonRpcRequestMessage {
   
   private JsonRpcNotificationParams params;
 

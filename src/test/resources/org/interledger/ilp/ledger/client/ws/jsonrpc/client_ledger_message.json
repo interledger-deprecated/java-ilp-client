@@ -1,0 +1,21 @@
+{
+	"jsonrpc": "2.0",
+	"id": null,
+	"method": "notify",
+	"params": {
+		"event": "message.send",
+		"resource": {
+			"ledger": "https://mars.hopebailie.com",
+			"from": "https://mars.hopebailie.com/accounts/adrian",
+			"to": "https://mars.hopebailie.com/accounts/bob",
+			"data": {
+				"method": "error",
+				"data": {
+					"id": "InvalidBodyError",
+					"message": "Invalid method"
+				}
+			},
+			"account": "https://mars.hopebailie.com/accounts/adrian"
+		}
+	}
+}

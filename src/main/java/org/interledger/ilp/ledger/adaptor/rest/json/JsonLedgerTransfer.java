@@ -1,8 +1,17 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
+import java.util.Base64;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import org.interledger.ilp.core.ledger.model.LedgerTransfer;
+import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
+import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
+import org.interledger.ilp.ledger.client.model.ClientLedgerTransfer;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -85,12 +94,12 @@ public class JsonLedgerTransfer {
   }
 
   @JsonProperty("ledger")
-  public URI getLedgerId() {
+  public URI getLedger() {
     return ledgerId;
   }
 
   @JsonProperty("ledger")
-  public void setLedgerId(URI ledger) {
+  public void setLedger(URI ledger) {
     this.ledgerId = ledger;
   }
   
@@ -102,6 +111,95 @@ public class JsonLedgerTransfer {
     } catch (JsonProcessingException jpe) {
       throw new RuntimeException(jpe);
     }
+  }
+  
+  public LedgerTransfer toLedgerTransfer() {
+    
+    if(getCredits().size() != 1 || getDebits().size() != 1) {
+      throw new RuntimeException("Only single transaction transfers are supported.");
+    }
+    
+    JsonLedgerTransferAccountEntry creditEntry = getCredits().get(0);
+    JsonLedgerTransferAccountEntry debitEntry = getDebits().get(0);
+    
+    ClientLedgerTransfer transfer = new ClientLedgerTransfer();
+    transfer.setId(getId().toString());
+    transfer.setLedger(getLedger().toString());
+    
+    transfer.setToAccount(creditEntry.getAccount().toString());
+
+    //FIXME Process the debit and credit entries fully
+    
+    transfer.setFromAccount(debitEntry.getAccount().toString());
+    transfer.setAmount(debitEntry.getAmount());
+    transfer.setAuthorized(debitEntry.isAuthorized());
+    if(debitEntry.getInvoice() != null) {
+      transfer.setInvoice(debitEntry.getInvoice().toString());
+    }
+    if(debitEntry.getMemo() != null) {
+      Object data = debitEntry.getMemo();
+      if(data instanceof Map) {
+        try {
+          ObjectMapper mapper = new ObjectMapper();
+          String dataValue = mapper.writeValueAsString(data);
+          transfer.setData(dataValue.getBytes(Charset.forName("UTF-8")));
+        } catch (JsonProcessingException e) {
+          throw new RuntimeException("Unable to reserialize transfer data.", e);
+        }
+      } else {
+        transfer.setData(Base64.getDecoder().decode(data.toString()));
+      }
+    }
+    transfer.setRejected(debitEntry.isRejected());
+    transfer.setRejectionMessage(debitEntry.getRejectionMessage());
+    
+    transfer.setCancellationCondition(getCancellationCondition());
+    transfer.setExecutionCondition(getExecutionCondition());
+    transfer.setExpiresAt(getExpiresAt());
+
+    return transfer;  }
+  
+  public static JsonLedgerTransfer fromLedgerTransfer(LedgerTransfer transfer, RestLedgerAdaptor ledgerAdaptor) {
+
+    JsonLedgerTransfer jsonTransfer = new JsonLedgerTransfer();
+    
+    jsonTransfer.setId(URI.create(transfer.getId() != null ? transfer.getId() : ledgerAdaptor.getNextTransferId()));
+    jsonTransfer.setLedger(URI.create(transfer.getLedger() != null ? transfer.getLedger() : ledgerAdaptor.getServiceUrl(ServiceUrls.LEDGER)));
+
+    List<JsonLedgerTransferAccountEntry> credits = new LinkedList<>();
+    JsonLedgerTransferAccountEntry jsonCreditEntry = new JsonLedgerTransferAccountEntry();
+    jsonCreditEntry.setAccount(ledgerAdaptor.getAccountIdentifier(transfer.getToAccount()));
+    jsonCreditEntry.setAmount(transfer.getAmount());
+    if(transfer.getData() != null) {
+      //TODO Undocumented assumptions made here. 
+      // If the provided data is valid UTF8 JSON then embed otherwise base64url encode and send as { "base64url" : "<data>"}.
+      String data = new String(transfer.getData(), Charset.forName("UTF-8"));
+      if(JsonValidator.isValid(data)) {
+        jsonCreditEntry.setMemo(data);
+      }
+      else
+      {
+        jsonCreditEntry.setMemo("{\"base64url\":\"" + Base64.getUrlEncoder().encodeToString(transfer.getData()) + "\"}");
+      }
+    }
+    credits.add(jsonCreditEntry);
+    jsonTransfer.setCredits(credits);
+    
+    List<JsonLedgerTransferAccountEntry> debits = new LinkedList<>();
+    JsonLedgerTransferAccountEntry jsonDebitEntry = new JsonLedgerTransferAccountEntry();
+    jsonDebitEntry.setAccount(ledgerAdaptor.getAccountIdentifier(transfer.getFromAccount()));
+    jsonDebitEntry.setAmount(transfer.getAmount());
+    //FIXME Get note_to_self
+    jsonDebitEntry.setMemo(null);
+    jsonDebitEntry.setAuthorized(true);
+    debits.add(jsonDebitEntry);
+    jsonTransfer.setDebits(debits);
+    
+    jsonTransfer.setCancellationCondition(transfer.getCancellationCondition());
+    jsonTransfer.setExecutionCondition(transfer.getExecutionCondition());
+    jsonTransfer.setExpiresAt(transfer.getExpiresAt());
+
+    return jsonTransfer;    
   }
 
 

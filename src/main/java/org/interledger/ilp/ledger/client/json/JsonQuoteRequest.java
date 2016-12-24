@@ -1,13 +1,15 @@
-package org.interledger.ilp.ledger.client.model;
+package org.interledger.ilp.ledger.client.json;
 
 import java.util.Set;
+
+import org.interledger.ilp.core.client.model.MessageData;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(value=Include.NON_NULL)
-public class ClientQuoteQueryParams {
+public class JsonQuoteRequest implements MessageData {
   
   private String sourceAddress;
   private String sourceAmount;

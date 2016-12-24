@@ -11,7 +11,7 @@ import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.UnrecognizedOptionException;
-import org.interledger.ilp.core.ledger.LedgerAdaptor;
+import org.interledger.ilp.ledger.client.LedgerClient;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,10 +25,10 @@ public abstract class LedgerCommand implements CommandLineRunner, ApplicationCon
 
   protected CommandLineParser parser = new DefaultParser();
   protected HelpFormatter formatter = new HelpFormatter();
-  protected LedgerAdaptor ledgerClient;
+  protected LedgerClient ledgerClient;
   
   //TODO Get adaptor bean by name based on parameter
-  private String ledgerClientName;
+  private String ledgerAdaptortName;
 
   @Value("${ledger.rest.username:NULL}")
   private String ledgerUsername;
@@ -47,7 +47,7 @@ public abstract class LedgerCommand implements CommandLineRunner, ApplicationCon
   }
 
   @Autowired
-  public void setLedgerServiceFactory(LedgerAdaptor client) {
+  public void setLedgerClient(LedgerClient client) {
     this.ledgerClient = client;
   }
 
@@ -70,7 +70,7 @@ public abstract class LedgerCommand implements CommandLineRunner, ApplicationCon
   public Options getDefaultOptions() {
     return new Options()
         .addOption(Option.builder("l").argName("ledger").hasArg()
-            .desc("Ledger adaptor bean name." + (ledgerClientName != null ? " (" + ledgerClientName + ")" : "")).build())
+            .desc("Ledger adaptor bean name." + (ledgerAdaptortName != null ? " (" + ledgerAdaptortName + ")" : "")).build())
         .addOption(Option.builder("u").argName("user").hasArg()
             .desc("Username to use for ledger authentication." + (ledgerUsername != null ? " (" + ledgerUsername + ")" : "")).build())
         .addOption(Option.builder("p").argName("password").hasArg()

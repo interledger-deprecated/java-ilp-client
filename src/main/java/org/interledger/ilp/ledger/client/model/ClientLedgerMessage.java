@@ -7,8 +7,9 @@ public class ClientLedgerMessage implements LedgerMessage {
   private String ledger;
   private String from;
   private String to;
-  private Object data;
+  private byte[] data;
 
+  
   @Override
   public String getLedger() {
     return this.ledger;
@@ -25,7 +26,7 @@ public class ClientLedgerMessage implements LedgerMessage {
   }
 
   @Override
-  public Object getData() {
+  public byte[] getData() {
     return this.data;
   }
   
@@ -41,7 +42,7 @@ public class ClientLedgerMessage implements LedgerMessage {
     this.to = to;
   }
 
-  public void setData(Object data) {
+  public void setData(byte[] data) {
     this.data = data;
   }
 

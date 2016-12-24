@@ -1,17 +1,19 @@
 package org.interledger.ilp.ledger.client;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apache.commons.cli.HelpFormatter;
-import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.core.ledger.events.LedgerEvent;
 import org.interledger.ilp.ledger.client.commands.LedgerCommand;
 import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
+import org.interledger.ilp.ledger.client.events.ClientLedgerErrorEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerMessageEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerTransferEvent;
-import org.interledger.ilp.ledger.client.model.ClientQuoteQuery;
+import org.interledger.ilp.ledger.client.json.JsonMessageEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -23,6 +25,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
@@ -32,9 +36,7 @@ public class Application implements CommandLineRunner, ApplicationContextAware{
   private static final Logger log = LoggerFactory.getLogger(Application.class);
 
   private ApplicationContext applicationContext;
-  
-  private LedgerAdaptor adaptor;
-  
+    
   public static void main(String[] args) {
     SpringApplication.run("classpath:/META-INF/application-context.xml", args);
   }
@@ -99,23 +101,27 @@ public class Application implements CommandLineRunner, ApplicationContextAware{
     }
     
     if (event instanceof ClientLedgerMessageEvent) {
+      
+      byte[] messageData = ((ClientLedgerMessageEvent) event).getMessage().getData();
+      
       log.info("Message: {}", ((ClientLedgerMessageEvent) event).getMessage().toString());
+      log.info("Message data: {}", new String(messageData, Charset.forName("UTF-8")));
 
-      Object messageData = ((ClientLedgerMessageEvent) event).getMessage().getData();
-
-      // jackson will deserialize json objects into maps if no type info is available.
-      if (messageData instanceof Map) {
         try {
-          // FIXME: it would be nice if the messages were somewhat less opaque, so that clients
-          // could
-          // more easily know what to expect.
           ObjectMapper mapper = new ObjectMapper();
-          ClientQuoteQuery quote = mapper.convertValue(messageData, ClientQuoteQuery.class);
-          log.info("Message was a quote: {}", quote);
-        } catch (IllegalArgumentException e) {
-          // oops, not a quote after all..
+          JsonMessageEnvelope innerMessage = mapper.readValue(messageData, JsonMessageEnvelope.class);
+          log.info("Message received: {}", innerMessage);
+        } catch (JsonParseException e) {
+          e.printStackTrace();
+        } catch (JsonMappingException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-      }
+    }
+    
+    if(event instanceof ClientLedgerErrorEvent) {
+      log.error("Error event...", ((ClientLedgerErrorEvent) event).getError());
     }
     
     if(event instanceof ClientLedgerConnectEvent) {

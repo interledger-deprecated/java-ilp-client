@@ -1,0 +1,16 @@
+{
+	"from": "https://mars.hopebailie.com/accounts/bob",
+	"to": "https://mars.hopebailie.com/accounts/adrian",
+	"ledger": "https://mars.hopebailie.com",
+	"data": {
+		"id": "f0033bed-0804-427d-aa93-8aa941c5c7bd",
+		"method": "quote_request",
+		"data": {
+			"source_address": "za.zar.mars.hopebailie.bob",
+			"destination_amount": "5",
+			"destination_address": "za.zar.saturn.hopebailie.andrew",
+			"destination_expiry_duration": 0
+		}
+	}
+}
+

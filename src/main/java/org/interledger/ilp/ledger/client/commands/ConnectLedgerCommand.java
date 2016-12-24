@@ -31,14 +31,14 @@ public class ConnectLedgerCommand extends LedgerCommand {
     
     if(this.ledgerClient.isConnected()) {
       log.info("Already connected");
-      log.debug(this.ledgerClient.getLedgerInfo().toString());
+      log.debug(this.ledgerClient.getAdaptor().getLedgerInfo().toString());
       return;
     }
     
     log.info("Connecting...");
     this.ledgerClient.connect();
     
-    log.debug(this.ledgerClient.getLedgerInfo().toString());
+    log.debug(this.ledgerClient.getAdaptor().getLedgerInfo().toString());
     
     log.info("Connected");
     

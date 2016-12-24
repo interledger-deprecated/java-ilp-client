@@ -10,13 +10,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ClientLedgerTransfer implements LedgerTransfer {
 
   private String id;
-  private String ledgerId;
+  private String ledger;
   private String fromAccount;
   private String toAccount;
   private String amount;
   private boolean authorized;
   private String invoice;
-  private Object memo;
+  private byte[] data;
   private String executionCondition;
   private String cancellationCondition;
   private ZonedDateTime expiresAt;
@@ -27,8 +27,8 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     return id;
   }
 
-  public String getLedgerId() {
-    return ledgerId;
+  public String getLedger() {
+    return ledger;
   }
 
   public String getFromAccount() {
@@ -51,8 +51,8 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     return invoice;
   }
 
-  public Object getMemo() {
-    return memo;
+  public byte[] getData() {
+    return data;
   }
 
   public String getExecutionCondition() {
@@ -79,8 +79,8 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     this.id = id;
   }
 
-  public void setLedgerId(String ledgerId) {
-    this.ledgerId = ledgerId;
+  public void setLedger(String ledger) {
+    this.ledger = ledger;
   }
 
   public void setFromAccount(String fromAccount) {
@@ -103,8 +103,8 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     this.invoice = invoice;
   }
 
-  public void setMemo(Object memo) {
-    this.memo = memo;
+  public void setData(byte[] data) {
+    this.data = data;
   }
 
   public void setExecutionCondition(String executionCondition) {

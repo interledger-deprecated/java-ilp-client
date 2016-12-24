@@ -4,7 +4,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.interledger.ilp.core.ledger.model.Account;
-import org.interledger.ilp.core.ledger.service.LedgerAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -26,20 +25,23 @@ public class GetLedgerAccountCommand extends LedgerCommand {
 
   @Override
   public Options getOptions() {
-    return getDefaultOptions().addOption(Option.builder("a").argName("account").hasArg().required()
+    return getDefaultOptions().addOption(Option.builder("account").argName("account").hasArg()
         .desc("Account to query").build());
   }
 
   @Override
   protected void runCommand(CommandLine cmd) throws Exception {
     try {
-      log.debug("Getting account service");
-      LedgerAccountService accountService = ledgerClient.getAccountService();
       
-      log.debug("Getting account details for " + cmd.getOptionValue("a"));
-      Account account = accountService.getAccount(cmd.getOptionValue("a"));
+      String account = cmd.getOptionValue("account");
+      if(account == null) {
+        account = this.ledgerClient.getAccount();
+      }
       
-      log.info(account.toString());
+      log.debug("Getting account details for " + cmd.getOptionValue("account"));
+      Account accountData = ledgerClient.getAdaptor().getAccount(cmd.getOptionValue("account"));
+      
+      log.info(accountData.toString());
     } catch (Exception e) {
       log.error("Error getting account data.", e);
     }

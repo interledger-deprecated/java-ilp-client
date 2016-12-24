@@ -1,0 +1,11 @@
+{
+	"jsonrpc": "2.0",
+	"id": "a6aea547-3781-4d28-8ca8-30c419df88ab",
+	"method": "subscribe_account",
+	"params": {
+		"accounts": [
+			"https://mars.hopebailie.com/accounts/bob"
+		],
+		"eventType": "*"
+	}
+}

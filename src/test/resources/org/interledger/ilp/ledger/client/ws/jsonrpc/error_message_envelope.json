@@ -1,0 +1,7 @@
+{
+	"method": "error",
+	"data": {
+		"id": "InvalidBodyError",
+		"message": "Invalid method"
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"id": "6ad8fa8c-cbb1-4ccc-b868-72547ae2c76a",
+	"method": "quote_response",
+	"data": {
+		"source_ledger": "za.zar.mars.hopebailie.",
+		"destination_ledger": "za.zar.saturn.hopebailie.",
+		"source_connector_account": "za.zar.mars.hopebailie.adrian",
+		"source_amount": "100.31",
+		"destination_amount": "100.00",
+		"source_expiry_duration": "6",
+		"destination_expiry_duration": "5"
+	}
+}

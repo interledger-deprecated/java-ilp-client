@@ -45,7 +45,12 @@ public class AdaptorsCommand extends LedgerCommand implements ApplicationContext
     if(adaptorName != null){
       log.debug("Loading adaptor: " + adaptorName);
       LedgerAdaptor adaptor = adaptors.get(adaptorName);
-      //TODO Set adaptor
+      if(adaptor != null) {
+        //TODO Set adaptor
+        throw new RuntimeException("Not implemented yet");
+      } else {
+        log.debug("Adaptor not found: " + adaptorName);
+      }
     } else {
       System.out.println("\r\nAvailable adaptors:\r\n");
       for (Entry<String, LedgerAdaptor> adaptor : adaptors.entrySet()) {

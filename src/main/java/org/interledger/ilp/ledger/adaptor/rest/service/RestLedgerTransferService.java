@@ -1,8 +1,6 @@
 package org.interledger.ilp.ledger.adaptor.rest.service;
 
 import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
@@ -11,7 +9,6 @@ import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
-import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransferAccountEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -33,21 +30,28 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
   private static final Logger log = LoggerFactory.getLogger(RestLedgerTransferService.class);
 
   @Override
-  public void sendTransfer(LedgerTransfer transfer) throws Exception {
+  public void sendTransfer(LedgerTransfer transfer) {
     try {
       
-      JsonLedgerTransfer jsonTransfer = buildJsonTransfer(transfer);
+      JsonLedgerTransfer jsonTransfer = JsonLedgerTransfer.fromLedgerTransfer(transfer, adaptor);
+      
+      if(!jsonTransfer.getLedger().toString().equals(getServiceUrl(ServiceUrls.LEDGER))) {
+        throw new IllegalArgumentException("Can't make transfers on other ledgers. Illegal ledger identifier: " + jsonTransfer.getLedger());
+      }
+      
+      if(!jsonTransfer.getId().toString().startsWith(getServiceUrl(ServiceUrls.LEDGER))) {
+        throw new IllegalArgumentException("Illegal transfer identifier: " + transfer.getId());
+      }
+      
       log.debug("PUT Transfer - id : {}", jsonTransfer.getId());
-            
-      //FIXME - This is ugly. We use the transfer's ID as the URI instead of adding the ID to the endpoint URL
-      //URI uri = new UriTemplate(getServiceUrl(TRANSFER_URL_NAME)).expand(transfer.getId());
-      URI uri = URI.create(transfer.getId());
-      RequestEntity<JsonLedgerTransfer> request = RequestEntity.put(uri)
+      
+      
+      RequestEntity<JsonLedgerTransfer> request = RequestEntity.put(jsonTransfer.getId())
           .contentType(MediaType.APPLICATION_JSON_UTF8).body(jsonTransfer, JsonLedgerTransfer.class);
       ResponseEntity<JsonLedgerTransfer> rsp = restTemplate.exchange(request,
           JsonLedgerTransfer.class);
 
-      log.debug("Transfer Response: ", rsp.getBody());
+      log.trace("Transfer Response: " + rsp.getBody());
 
     } catch (HttpStatusCodeException e) {
       switch (e.getStatusCode()) {
@@ -61,8 +65,7 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
   }
 
   @Override
-  public void rejectTransfer(LedgerTransfer transfer, TransferRejectedReason reason)
-      throws Exception {
+  public void rejectTransfer(LedgerTransfer transfer, TransferRejectedReason reason) {
     
     log.debug("Rejecting Transfer - id : {}", transfer.getId());
 
@@ -87,44 +90,8 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
   }
   
   @Override
-  public URI getNextTransferId() {
-    //FIXME - This is ugly. It should return just the UUID.
-    return new UriTemplate(getServiceUrl(ServiceUrls.TRANSFER)).expand(UUID.randomUUID());
+  public String getNextTransferId() {
+    return new UriTemplate(getServiceUrl(ServiceUrls.TRANSFER)).expand(UUID.randomUUID()).toString();
   }
   
-  protected JsonLedgerTransfer buildJsonTransfer(LedgerTransfer transfer) {
-    
-    //TODO Validate that ids are URIs before we try to convert them
-    
-    JsonLedgerTransfer jsonTransfer = new JsonLedgerTransfer();
-    jsonTransfer.setId(URI.create(transfer.getId()));
-    
-    //FIXME Should we get this from the adaptor or at least compare with the adaptor?
-    jsonTransfer.setLedgerId(URI.create(transfer.getLedgerId()));
-
-    List<JsonLedgerTransferAccountEntry> credits = new LinkedList<>();
-    JsonLedgerTransferAccountEntry jsonCreditEntry = new JsonLedgerTransferAccountEntry();
-    jsonCreditEntry.setAccount(URI.create(transfer.getToAccount()));
-    jsonCreditEntry.setAmount(transfer.getAmount());
-    jsonCreditEntry.setMemo(transfer.getMemo());
-    credits.add(jsonCreditEntry);
-    jsonTransfer.setCredits(credits);
-    
-    List<JsonLedgerTransferAccountEntry> debits = new LinkedList<>();
-    JsonLedgerTransferAccountEntry jsonDebitEntry = new JsonLedgerTransferAccountEntry();
-    jsonDebitEntry.setAccount(URI.create(transfer.getFromAccount()));
-    jsonDebitEntry.setAmount(transfer.getAmount());
-    jsonDebitEntry.setMemo(transfer.getMemo());
-    jsonDebitEntry.setAuthorized(true);
-    debits.add(jsonDebitEntry);
-    jsonTransfer.setDebits(debits);
-    
-    jsonTransfer.setCancellationCondition(transfer.getCancellationCondition());
-    jsonTransfer.setExecutionCondition(transfer.getExecutionCondition());
-    jsonTransfer.setExpiresAt(transfer.getExpiresAt());
-
-    return jsonTransfer;
-    
-  }
-
 }

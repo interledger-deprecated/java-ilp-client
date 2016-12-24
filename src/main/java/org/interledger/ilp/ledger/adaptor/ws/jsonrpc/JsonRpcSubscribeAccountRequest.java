@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonDeserialize(as=JsonRpcSubscribeAccountRequest.class)
-public class JsonRpcSubscribeAccountRequest extends JsonRpcRequest {
+public class JsonRpcSubscribeAccountRequest extends JsonRpcRequestMessage {
 
   private JsonRpcSubscribeAccountRequestParams params;
   
@@ -12,7 +12,6 @@ public class JsonRpcSubscribeAccountRequest extends JsonRpcRequest {
     setMethod("subscribe_account");
   }
   
-
   @JsonProperty(value = "params")
   public JsonRpcSubscribeAccountRequestParams getParams() {
     return this.params;

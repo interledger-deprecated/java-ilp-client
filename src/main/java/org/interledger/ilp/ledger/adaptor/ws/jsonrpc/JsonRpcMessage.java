@@ -29,4 +29,5 @@ public abstract class JsonRpcMessage {
     }
   }
   
+  //TODO Need a better toString()
 }

@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
     @Type(value = JsonRpcRequestTransferNotificationParams.class, name = "transfer.create"),
     @Type(value = JsonRpcRequestTransferNotificationParams.class, name = "transfer.update"),
     @Type(value = JsonRpcRequestMessageNotificationParams.class, name = "message.send")})
-public abstract class JsonRpcNotificationParams {
+public abstract class JsonRpcNotificationParams implements JsonRpcRequestParams {
 
   private UUID id;
   private String event;

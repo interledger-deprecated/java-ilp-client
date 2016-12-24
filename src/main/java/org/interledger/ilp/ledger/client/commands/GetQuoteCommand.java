@@ -1,19 +1,12 @@
 package org.interledger.ilp.ledger.client.commands;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-
-import javax.crypto.CipherInputStream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.interledger.ilp.ledger.client.LedgerClient;
-import org.interledger.ilp.ledger.client.events.ApplicationEventPublishingLedgerEventHandler;
-import org.interledger.ilp.ledger.client.model.ClientQuoteQueryParams;
+import org.interledger.ilp.ledger.client.json.JsonQuoteRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -40,32 +33,37 @@ public class GetQuoteCommand extends LedgerCommand {
             .desc("Destination Amount").build())
         .addOption(
             Option.builder("sourceAddress").argName("source address").hasArg()
-            .desc("Source Ledger").build())
+            .desc("Source ILP Address").build())
         .addOption(
             Option.builder("destAddress").argName("destination address").hasArg().required()
-            .desc("Recipients Ledger").build())
-        .addOption(Option.builder("connector").argName("connector").hasArg().required()
+            .desc("Recipients ILP Address").build())
+        .addOption(
+            Option.builder("expiry").argName("destination expiry").hasArg()
+            .desc("Quote expiry").build())
+        .addOption(Option.builder("connector").argName("connector").hasArg()
             .desc("Connector").build());
     
   }
 
   @Override
   protected void runCommand(CommandLine cmd) throws Exception {
-    ClientQuoteQueryParams quoteParams = new ClientQuoteQueryParams();
+    JsonQuoteRequest quoteParams = new JsonQuoteRequest();
     quoteParams.setSourceAddress(cmd.getOptionValue("sourceAddress"));
     quoteParams.setSourceAmount(cmd.getOptionValue("sourceAmount"));
     quoteParams.setDestinationAmount(cmd.getOptionValue("destAmount"));
     quoteParams.setDestinationAddress(cmd.getOptionValue("destAddress"));
-
-    Set<String> connectors = new HashSet<String>();
-    connectors.add(cmd.getOptionValue("connector"));
-    quoteParams.setConnectors(connectors);
+    if(cmd.getOptionValue("destExpiry") != null) {
+      quoteParams.setDestinationExpiryDuration(Integer.valueOf(cmd.getOptionValue("destExpiry")));
+    }
     
-    // FIXME: here as a POC, the Application needs to be refactored to use client, not adaptor
-    LedgerClient client = new LedgerClient(ledgerClient, "admin", null,
-        new ApplicationEventPublishingLedgerEventHandler(applicationContext));
-
-    client.requestQuote(quoteParams);
+    if(cmd.getOptionValue("connector") != null) {
+      Set<String> connectors = new HashSet<String>();
+      connectors.add(cmd.getOptionValue("connector"));
+      quoteParams.setConnectors(connectors);      
+    }
+    
+    this.ledgerClient.requestQuote(quoteParams);
+    
   }
 
 }

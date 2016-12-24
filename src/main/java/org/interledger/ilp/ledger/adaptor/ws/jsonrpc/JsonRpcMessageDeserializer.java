@@ -29,8 +29,9 @@ public class JsonRpcMessageDeserializer extends StdDeserializer<JsonRpcMessage> 
     JsonNode methodNode = root.get("method");
 
     if(methodNode == null || methodNode.isMissingNode() || !methodNode.isValueNode()) {
-      rpcClass = JsonRpcResponse.class;
+      rpcClass = JsonRpcResponseMessage.class;
     } else if(methodNode.isValueNode()) {
+
       String method = methodNode.asText();
       
       if("connect".equals(method)) {

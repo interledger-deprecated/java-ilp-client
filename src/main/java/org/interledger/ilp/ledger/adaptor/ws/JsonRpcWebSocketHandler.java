@@ -26,17 +26,16 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
     logger.debug("Opening session id {} ", session.getId()); 
-    this.channel.setSession(session);
-    this.channel.onConnectionEstablished();
+    this.channel.onConnectionEstablished(session);
     super.afterConnectionEstablished(session);
   }
   
   @Override
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-    logger.debug("Message received: " + message.getPayload());
+    logger.trace("Json Rpc message received: " + message.getPayload());
     try {
       JsonRpcMessage rpcMessage = mapper.readValue(message.getPayload(), JsonRpcMessage.class);
-      this.channel.onJsonRpcMessage(rpcMessage);
+      this.channel.onMessage(rpcMessage);
     } catch (JsonProcessingException e) {
       logger.error("Invalid json-rpc message received:\n {}", message.getPayload(), e);
       throw e;
@@ -46,7 +45,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
   @Override
   public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
     logger.error("Error in session id {}", session.getId(), exception); 
-    this.channel.onJsonRpcTransportError(exception);
+    this.channel.onTransportError(exception);
     super.handleTransportError(session, exception);
   }
 
