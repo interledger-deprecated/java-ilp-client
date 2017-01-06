@@ -3,10 +3,7 @@ package org.interledger.ilp.ledger.client;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
@@ -18,10 +15,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.interledger.cryptoconditions.Condition;
+import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.core.ledger.events.LedgerEvent;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.core.ledger.model.ConnectorInfo;
 import org.interledger.ilp.core.ledger.model.LedgerMessage;
 import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
 import org.interledger.ilp.ledger.client.events.ClientLedgerErrorEvent;
@@ -42,29 +39,28 @@ public class LedgerClient {
 
   private static final Logger log = LoggerFactory.getLogger(LedgerClient.class);
 
-  //Connectors <name, localAccountId>
-  private Map<String, String> connectors;
+  private Set<InterledgerAddress> connectors;
   
   private LedgerAdaptor adaptor;
   private LedgerEventHandler eventHandler;
-  private String account;
+  private InterledgerAddress clientAccountAddress;
   private LedgerMessageResponseMapper messageMapper;
   private ObjectMapper jsonObjectMapper;
   
   private boolean isConnecting = false;
   
   /**
-   * Create a new client using the provided adaptor and using the given local ledger account as
-   * the default from account.
+   * Create a new client using the provided adaptor and using the given local ledger clientAccountAddress as
+   * the default from clientAccountAddress.
    *  
    * @param adaptor Ledger adaptor to use for connecting to the ledger
-   * @param account Default from account for transfers and messages (the adaptor should be authorized to transact with this account)
-   * @param connectors List of connectors that hold accounts on this ledger
+   * @param clientAccountAddress Default from clientAccountAddress for transfers and messages (the adaptor should be authorized to transact with this clientAccountAddress)
+   * @param connectors Connectors that hold accounts on this ledger
    * @param eventHandler An event handler for all {@link LedgerEvent}s that are raised by the client
    */
-  public LedgerClient(LedgerAdaptor adaptor, String account, Map<String, String> connectors, LedgerEventHandler eventHandler) {
+  public LedgerClient(LedgerAdaptor adaptor, InterledgerAddress accountAddress, Set<InterledgerAddress> connectors, LedgerEventHandler eventHandler) {
     this.adaptor = adaptor;
-    this.account = account;
+    this.clientAccountAddress = accountAddress;
     this.connectors = connectors;
     this.eventHandler = new LedgerEventProxy(eventHandler);
     this.messageMapper = new LedgerMessageResponseMapper(60 * 1000);
@@ -93,8 +89,8 @@ public class LedgerClient {
     adaptor.disconnect();
   }
 
-  public String getAccount() {
-    return this.account;
+  public InterledgerAddress getAccount() {
+    return this.clientAccountAddress;
   }
 
   //FIXME Should we be exposing this? Maybe some methods required on the Client instead?
@@ -102,6 +98,7 @@ public class LedgerClient {
     return this.adaptor;
   }
   
+  //FIXME The JSON serialization should be extracted to another component
   public JsonQuoteResponse requestQuote(JsonQuoteRequest query) {
 
     throwIfNotConnected();
@@ -111,11 +108,11 @@ public class LedgerClient {
     }
     
     if(query.getSourceAddress() == null) {
-      query.setSourceAddress(adaptor.getLedgerInfo().getLedgerPrefix() +  account);
+      query.setSourceAddress(getAccount().toString());
     }
     
     //Local transfer
-    if(query.getDestinationAddress().startsWith(adaptor.getLedgerInfo().getLedgerPrefix())) {
+    if(query.getDestinationAddress().startsWith(adaptor.getLedgerInfo().getAddressPrefix().toString())) {
       String amount = query.getSourceAmount() != null ? query.getSourceAmount() : query.getDestinationAmount();
       
       JsonQuoteResponse response = new JsonQuoteResponse();
@@ -127,11 +124,11 @@ public class LedgerClient {
     }
     
     //Prepare connector list
-    Set<String> connectors = new HashSet<>();
+    Set<InterledgerAddress> connectors = new HashSet<>();
     if(query.getConnectors() != null && query.getConnectors().size() > 0) {
       connectors.addAll(query.getConnectors());
     } else {
-      connectors.addAll(this.connectors.values());
+      connectors.addAll(this.connectors);
     }
     
     SortedSet<JsonQuoteResponse> responses = new ConcurrentSkipListSet<>();
@@ -139,15 +136,15 @@ public class LedgerClient {
     
     if(connectorCount > 0) {
       //Parallel fetch
-      BlockingQueue<String> connectorQueue = 
-          new ArrayBlockingQueue<String>(connectorCount, false, connectors);
+      BlockingQueue<InterledgerAddress> connectorQueue = 
+          new ArrayBlockingQueue<InterledgerAddress>(connectorCount, false, connectors);
       ExecutorService es = Executors.newFixedThreadPool(connectorCount);
       for(int count = 0 ; count < connectorCount ; count++) {
           es.submit(new Runnable() {
             
             @Override
             public void run() {
-                String connector = null;
+              InterledgerAddress connector = null;
                 while((connector = connectorQueue.poll()) != null) {
                   try {
                     JsonQuoteResponse response = requestQuoteFromConnector(connector, query);
@@ -171,7 +168,7 @@ public class LedgerClient {
     else
     {
       //Single fetch
-      String connector = connectors.toArray(new String[1])[0];
+      InterledgerAddress connector = connectors.toArray(new InterledgerAddress[1])[0];
       try {
         JsonQuoteResponse response = requestQuoteFromConnector(connector, query);
         if(response != null) {
@@ -190,7 +187,7 @@ public class LedgerClient {
     return responses.first();
   }
   
-  private JsonQuoteResponse requestQuoteFromConnector(String connector, JsonQuoteRequest query) throws ResponseTimeoutException {
+  private JsonQuoteResponse requestQuoteFromConnector(InterledgerAddress connector, JsonQuoteRequest query) throws ResponseTimeoutException {
     
     JsonQuoteRequestEnvelope envelope = new JsonQuoteRequestEnvelope();
     envelope.setId(UUID.randomUUID().toString());
@@ -204,7 +201,7 @@ public class LedgerClient {
     }
     
     ClientLedgerMessage message = new ClientLedgerMessage();
-    message.setFrom(account);
+    message.setFrom(clientAccountAddress);
     message.setTo(connector);
     message.setData(messageData.getBytes(Charset.forName("UTF-8")));
     
@@ -233,24 +230,24 @@ public class LedgerClient {
     
     if(connectors == null || connectors.size() == 0) {
       
-      connectors = new HashMap<String, String>();
+      connectors = new HashSet<InterledgerAddress>();
       
       //Get connectors from ledger if required
       //TODO: Log connectors from ledger that are not in local list (Warning?)
-      List<ConnectorInfo> ledgerConnectors;
+      Set<InterledgerAddress> ledgerConnectors;
       try {
-        ledgerConnectors = adaptor.getLedgerInfo().getConnectors();
-        for (ConnectorInfo connector : ledgerConnectors) {
-          connectors.put(connector.getName(), connector.getId());
+        ledgerConnectors = adaptor.getConnectors();
+        for (InterledgerAddress connector : ledgerConnectors) {
+          connectors.add(connector);
         }
       } catch (Exception e) {
         eventHandler.handleLedgerEvent(new ClientLedgerErrorEvent(this, e));
       }
     }
     
-    //Subscribe to account events for default account
+    //Subscribe to clientAccountAddress events for default clientAccountAddress
     try {
-      adaptor.subscribeToAccountNotifications(account);
+      adaptor.subscribeToAccountNotifications(clientAccountAddress);
     } catch (Exception e) {
       eventHandler.handleLedgerEvent(new ClientLedgerErrorEvent(this, e));
     }

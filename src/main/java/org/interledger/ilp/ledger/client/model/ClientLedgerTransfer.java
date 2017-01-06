@@ -1,7 +1,12 @@
 package org.interledger.ilp.ledger.client.model;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
+import javax.money.MonetaryAmount;
+
+import org.interledger.cryptoconditions.Condition;
+import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,37 +14,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ClientLedgerTransfer implements LedgerTransfer {
 
-  private String id;
-  private String ledger;
-  private String fromAccount;
-  private String toAccount;
-  private String amount;
+  private UUID id;
+  private InterledgerAddress fromAccount;
+  private InterledgerAddress toAccount;
+  private MonetaryAmount amount;
   private boolean authorized;
   private String invoice;
   private byte[] data;
-  private String executionCondition;
-  private String cancellationCondition;
+  private byte[] noteToSelf;
+  private Condition executionCondition;
+  private Condition cancellationCondition;
   private ZonedDateTime expiresAt;
   private boolean rejected;
   private String rejectionMessage;
 
-  public String getId() {
+  public UUID getId() {
     return id;
   }
 
-  public String getLedger() {
-    return ledger;
-  }
-
-  public String getFromAccount() {
+  public InterledgerAddress getFromAccount() {
     return fromAccount;
   }
 
-  public String getToAccount() {
+  public InterledgerAddress getToAccount() {
     return toAccount;
   }
 
-  public String getAmount() {
+  public MonetaryAmount getAmount() {
     return amount;
   }
 
@@ -55,11 +56,15 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     return data;
   }
 
-  public String getExecutionCondition() {
+  public byte[] getNoteToSelf() {
+    return noteToSelf;
+  }
+
+  public Condition getExecutionCondition() {
     return executionCondition;
   }
 
-  public String getCancellationCondition() {
+  public Condition getCancellationCondition() {
     return cancellationCondition;
   }
 
@@ -75,23 +80,19 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     return rejectionMessage;
   }
 
-  public void setId(String id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
-  public void setLedger(String ledger) {
-    this.ledger = ledger;
-  }
-
-  public void setFromAccount(String fromAccount) {
+  public void setFromAccount(InterledgerAddress fromAccount) {
     this.fromAccount = fromAccount;
   }
 
-  public void setToAccount(String toAccount) {
+  public void setToAccount(InterledgerAddress toAccount) {
     this.toAccount = toAccount;
   }
 
-  public void setAmount(String amount) {
+  public void setAmount(MonetaryAmount amount) {
     this.amount = amount;
   }
 
@@ -107,11 +108,15 @@ public class ClientLedgerTransfer implements LedgerTransfer {
     this.data = data;
   }
 
-  public void setExecutionCondition(String executionCondition) {
+  public void setNoteToSelf(byte[] noteToSelf) {
+    this.noteToSelf = noteToSelf;
+  }
+
+  public void setExecutionCondition(Condition executionCondition) {
     this.executionCondition = executionCondition;
   }
 
-  public void setCancellationCondition(String cancellationCondition) {
+  public void setCancellationCondition(Condition cancellationCondition) {
     this.cancellationCondition = cancellationCondition;
   }
 

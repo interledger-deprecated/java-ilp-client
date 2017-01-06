@@ -1,11 +1,12 @@
 package org.interledger.ilp.ledger.client.events;
 
+import java.util.EventObject;
+
 import org.interledger.ilp.core.ledger.events.LedgerMessageEvent;
 import org.interledger.ilp.core.ledger.model.LedgerMessage;
-import org.springframework.context.ApplicationEvent;
 
 public class ClientLedgerMessageEvent 
-  extends ApplicationEvent implements LedgerMessageEvent {
+  extends EventObject implements LedgerMessageEvent {
 
   private static final long serialVersionUID = -3783517030193972130L;
   

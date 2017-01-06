@@ -1,27 +1,21 @@
 package org.interledger.ilp.ledger.client.model;
 
+import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.ledger.model.LedgerMessage;
 
 public class ClientLedgerMessage implements LedgerMessage {
 
-  private String ledger;
-  private String from;
-  private String to;
+  private InterledgerAddress from;
+  private InterledgerAddress to;
   private byte[] data;
-
   
   @Override
-  public String getLedger() {
-    return this.ledger;
-  }
-  
-  @Override
-  public String getFrom() {
+  public InterledgerAddress getFrom() {
     return this.from;
   }
 
   @Override
-  public String getTo() {
+  public InterledgerAddress getTo() {
     return this.to;
   }
 
@@ -29,16 +23,12 @@ public class ClientLedgerMessage implements LedgerMessage {
   public byte[] getData() {
     return this.data;
   }
-  
-  public void setLedger(String ledger) {
-    this.ledger = ledger;
-  }
 
-  public void setFrom(String from) {
+  public void setFrom(InterledgerAddress from) {
     this.from = from;
   }
 
-  public void setTo(String to) {
+  public void setTo(InterledgerAddress to) {
     this.to = to;
   }
 

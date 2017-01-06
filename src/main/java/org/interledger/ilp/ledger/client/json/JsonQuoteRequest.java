@@ -2,11 +2,12 @@ package org.interledger.ilp.ledger.client.json;
 
 import java.util.Set;
 
+import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.client.model.MessageData;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(value=Include.NON_NULL)
 public class JsonQuoteRequest implements MessageData {
@@ -18,7 +19,7 @@ public class JsonQuoteRequest implements MessageData {
   private int destinationExpiryDuration;
   private String destinationPrecision;
   private String destinationScale;
-  private Set<String> connectors;
+  private Set<InterledgerAddress> connectors;
   
   @JsonProperty("source_address")
   public String getSourceAddress() {
@@ -57,7 +58,7 @@ public class JsonQuoteRequest implements MessageData {
     return destinationScale;
   }
   
-  public Set<String> getConnectors() {
+  public Set<InterledgerAddress> getConnectors() {
     return connectors;
   }
   public void setSourceAddress(String sourceAddress) {
@@ -81,7 +82,7 @@ public class JsonQuoteRequest implements MessageData {
   public void setDestinationScale(String destinationScale) {
     this.destinationScale = destinationScale;
   }
-  public void setConnectors(Set<String> connectors) {
+  public void setConnectors(Set<InterledgerAddress> connectors) {
     this.connectors = connectors;
   }
 }

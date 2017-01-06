@@ -1,9 +1,10 @@
 package org.interledger.ilp.ledger.client.events;
 
-import org.interledger.ilp.core.ledger.events.LedgerEvent;
-import org.springframework.context.ApplicationEvent;
+import java.util.EventObject;
 
-public class ClientLedgerErrorEvent extends ApplicationEvent implements LedgerEvent {
+import org.interledger.ilp.core.ledger.events.LedgerEvent;
+
+public class ClientLedgerErrorEvent extends EventObject implements LedgerEvent {
 
   private static final long serialVersionUID = -3659190466620591845L;
   

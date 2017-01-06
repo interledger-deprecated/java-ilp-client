@@ -2,7 +2,6 @@ package org.interledger.ilp.ledger.client.json;
 
 import org.interledger.ilp.core.client.model.MessageData;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class JsonQuoteResponseEnvelope extends JsonMessageEnvelope {
