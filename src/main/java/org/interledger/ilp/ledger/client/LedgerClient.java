@@ -134,12 +134,7 @@ public class LedgerClient {
     SortedSet<JsonQuoteResponse> responses = new ConcurrentSkipListSet<>();
     int connectorCount = connectors.size();
     
-    if (connectorCount == 0) {
-      log.debug("No connectors to query for a quote.");
-      return null;
-    }
-    
-    if(connectorCount > 1) {
+    if(connectorCount > 0) {
       //Parallel fetch
       BlockingQueue<InterledgerAddress> connectorQueue = 
           new ArrayBlockingQueue<InterledgerAddress>(connectorCount, false, connectors);
@@ -172,8 +167,6 @@ public class LedgerClient {
     }
     else
     {
-      //TODO: do we really want a separate block to do the same as above? Is the cost of setting up 
-      //an executor and separate thread high enough to justify maintaining identical code blocks?
       //Single fetch
       InterledgerAddress connector = connectors.toArray(new InterledgerAddress[1])[0];
       try {
@@ -187,7 +180,7 @@ public class LedgerClient {
     }
     
     if(responses.size() == 0) {
-      log.debug("No quote responses received in time.");
+      log.debug("No qutoe responses received in time.");
       return null;
     }
     
