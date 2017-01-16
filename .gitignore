@@ -1,1 +1,17 @@
+### Gradle ###
 /bin/
+/*/bin/
+/.gradle/
+**/build/
+/.nb-gradle/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+### Eclipse ###
+.classpath
+.project
+.settings/*
+
+### Local Config - May contain passwords ###
+config/application.properties
