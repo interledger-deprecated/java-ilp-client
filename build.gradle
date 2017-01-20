@@ -32,8 +32,6 @@ dependencies {
     compile project(":java-crypto-conditions")
     
  	compile("org.slf4j:jcl-over-slf4j:1.7.12")
-
-    compile("com.fasterxml.jackson.core:jackson-databind:2.8.5")
     
     testCompile("junit:junit:4.12")    
 }

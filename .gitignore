@@ -1,3 +1,17 @@
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+### Gradle ###
 /bin/
 /*/bin/
 /.gradle/
@@ -11,3 +25,10 @@ gradle-app.setting
 .classpath
 .project
 .settings/*
+
+**/target/
+**/*.log
+**/nbactions.xml
+
+### Local Config - May contain passwords ###
+config/application.properties
