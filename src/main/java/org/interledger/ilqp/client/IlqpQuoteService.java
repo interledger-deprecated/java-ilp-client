@@ -1,7 +1,6 @@
 package org.interledger.ilqp.client;
 
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -15,33 +14,43 @@ import javax.money.MonetaryAmount;
 import org.interledger.ilp.client.LedgerClient;
 import org.interledger.ilp.client.exceptions.ResponseTimeoutException;
 import org.interledger.ilp.client.model.ClientLedgerMessage;
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.exceptions.InterledgerQuotingProtocolException;
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.exceptions.InterledgerQuotingProtocolException;
+import org.interledger.ilp.ledger.model.LedgerMessage;
 import org.interledger.ilqp.client.model.ClientQuoteResponse;
-import org.interledger.ilqp.core.QuoteService;
-import org.interledger.ilqp.core.model.QuoteErrorResponse;
-import org.interledger.ilqp.core.model.QuoteRequest;
-import org.interledger.ilqp.core.model.QuoteResponse;
+import org.interledger.quoting.QuoteService;
+import org.interledger.quoting.QuoteSelectionStrategy;
+import org.interledger.quoting.model.QuoteErrorResponse;
+import org.interledger.quoting.model.QuoteRequest;
+import org.interledger.quoting.model.QuoteResponse;
 
-public class ClientQuoteService implements QuoteService {
+/**
+ * The ILQP service gets quotes by using the ILQP protocol
+ * 
+ * This involves sending a quote request to neighboring connectors via the ledger interface.
+ * 
+ * As such the service is dependent on the LedgerClient
+ * 
+ * @author adrianhopebailie
+ *
+ */
+public class IlqpQuoteService implements QuoteService {
   
   private LedgerClient client;
   private Set<InterledgerAddress> connectors;
-  private int requestTimeout;
+  private int requestTimeoutMillis;
   
-  public ClientQuoteService(LedgerClient client) {
-    this(client, client.getRecommendedConnectors(), 60 * 1000);
+  public IlqpQuoteService(LedgerClient client) {
+    this(client, client.getRecommendedConnectors(), (int) TimeUnit.SECONDS.toMillis(60));
   }
 
-  public ClientQuoteService(LedgerClient client, Set<InterledgerAddress> connectors, int requestTimeout) {
+  public IlqpQuoteService(LedgerClient client, Set<InterledgerAddress> connectors, int requestTimeoutMillis) {
     this.client = client;
     this.connectors = connectors;
-    this.requestTimeout = requestTimeout;
+    this.requestTimeoutMillis = requestTimeoutMillis;
   }
 
-  //TODO Allow user to pass in a BestQuoteResolutionStrategy
-  public QuoteResponse requestQuote(QuoteRequest query) throws InterledgerQuotingProtocolException {
+  public QuoteResponse requestQuote(QuoteRequest query, QuoteSelectionStrategy selectionStrategy) throws InterledgerQuotingProtocolException {
 
     throwIfClientNotConnected();
     
@@ -64,7 +73,7 @@ public class ClientQuoteService implements QuoteService {
       return response;
     }
     
-    SortedSet<QuoteResponse> responses = new ConcurrentSkipListSet<>();
+    Set<QuoteResponse> responses = new ConcurrentSkipListSet<>();
     int connectorCount = connectors.size();
     
     if (connectorCount == 0) {
@@ -72,49 +81,37 @@ public class ClientQuoteService implements QuoteService {
       return null;
     }
     
-    if(connectorCount > 1) {
-      //Parallel fetch
-      BlockingQueue<InterledgerAddress> connectorQueue = 
-          new ArrayBlockingQueue<InterledgerAddress>(connectorCount, false, connectors);
-      ExecutorService es = Executors.newFixedThreadPool(connectorCount);
-      for(int count = 0 ; count < connectorCount ; count++) {
-          es.submit(new Runnable() {
-            
-            @Override
-            public void run() {
-              InterledgerAddress connector = null;
-                while((connector = connectorQueue.poll()) != null) {
-                    try {
-                      QuoteResponse response = requestQuote(query, connector);
-                      if(response != null) {
-                        responses.add(response);
-                      }
-                    } catch (InterledgerQuotingProtocolException e) {
-                      // TODO Log these failures
-                      e.printStackTrace();
+    //Parallel fetch
+    BlockingQueue<InterledgerAddress> connectorQueue = 
+        new ArrayBlockingQueue<InterledgerAddress>(connectorCount, false, connectors);
+    ExecutorService es = Executors.newFixedThreadPool(connectorCount);
+    for(int count = 0 ; count < connectorCount ; count++) {
+        es.submit(new Runnable() {
+          
+          @Override
+          public void run() {
+            InterledgerAddress connector = null;
+              while((connector = connectorQueue.poll()) != null) {
+                  try {
+                    QuoteResponse response = requestQuote(query, connector);
+                    if(response != null) {
+                      responses.add(response);
+                    } else {
+                      throw new InterledgerQuotingProtocolException("Error getting quote from " + connector);
                     }
-                }
-            }
-          });
-      }
-      es.shutdown();
-      try {
-        es.awaitTermination(5, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        throw new RuntimeException("Unexpected interupt waiting for quote responses.", e);
-      }
+                  } catch (InterledgerQuotingProtocolException e) {
+                    // TODO Log these failures
+                    e.printStackTrace();
+                  }
+              }
+          }
+        });
     }
-    else
-    {
-      //TODO: do we really want a separate block to do the same as above? Is the cost of setting up 
-      //an executor and separate thread high enough to justify maintaining identical code blocks?
-      
-      //Single fetch
-      InterledgerAddress connector = connectors.toArray(new InterledgerAddress[1])[0];
-        QuoteResponse response = requestQuote(query, connector);
-        if(response != null) {
-          responses.add(response);
-        }
+    es.shutdown();
+    try {
+      es.awaitTermination(5, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      throw new RuntimeException("Unexpected interupt waiting for quote responses.", e);
     }
     
     if(responses.size() == 0) {
@@ -122,7 +119,8 @@ public class ClientQuoteService implements QuoteService {
       return null;
     }
     
-    return responses.first();
+    return selectionStrategy.apply(responses);
+    
   }
 
   public QuoteResponse requestQuote(QuoteRequest query, InterledgerAddress connector) throws InterledgerQuotingProtocolException {
@@ -135,7 +133,7 @@ public class ClientQuoteService implements QuoteService {
     message.setData(query);
     
     try {
-      LedgerMessage response = client.sendMessage(connector, "quote_request", query, requestTimeout);
+      LedgerMessage response = client.sendMessage(connector, "quote_request", query, requestTimeoutMillis);
       if("error".equals(response.getType())) {
         QuoteErrorResponse error = (QuoteErrorResponse) response.getData();
         

@@ -9,19 +9,22 @@ import java.util.concurrent.TimeUnit;
 import javax.money.MonetaryAmount;
 
 import org.interledger.cryptoconditions.Condition;
+import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.client.events.ClientLedgerConnectEvent;
 import org.interledger.ilp.client.events.ClientLedgerErrorEvent;
 import org.interledger.ilp.client.events.ClientLedgerMessageEvent;
 import org.interledger.ilp.client.exceptions.ResponseTimeoutException;
 import org.interledger.ilp.client.model.ClientLedgerMessage;
 import org.interledger.ilp.client.model.ClientLedgerTransfer;
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.LedgerAdaptor;
-import org.interledger.ilp.core.ledger.events.LedgerEvent;
-import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.core.ledger.model.AccountInfo;
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.InterledgerPaymentRequest;
+import org.interledger.ilp.ledger.LedgerAdaptor;
+import org.interledger.ilp.ledger.events.LedgerEvent;
+import org.interledger.ilp.ledger.events.LedgerEventHandler;
+import org.interledger.ilp.ledger.model.AccountInfo;
+import org.interledger.ilp.ledger.model.LedgerInfo;
+import org.interledger.ilp.ledger.model.LedgerMessage;
+import org.interledger.quoting.model.QuoteResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,6 +157,36 @@ public class LedgerClient {
     
     this.adaptor.sendTransfer(transfer);
     return id;
+  }
+
+  public void fulfillTransfer(UUID transferId, Fulfillment fulfillment) {
+    this.adaptor.fulfillTransfer(transferId, fulfillment);
+  }
+  
+  public UUID makePayment(QuoteResponse quote, InterledgerPaymentRequest paymentRequest) {
+    
+    //TODO Make sure that the quote matches the IPR
+    
+    byte[] data = generateTransferMemo(paymentRequest);
+    ZonedDateTime expiresAt = calculateLocalExpiry(paymentRequest.getExpiresAt());
+    
+    return sendTransfer(
+        quote.getSourceConnectorAccount(), 
+        quote.getSourceAmount(), 
+        paymentRequest.getCondition(), 
+        expiresAt, 
+        data);
+        
+  }
+  
+  private byte[] generateTransferMemo(InterledgerPaymentRequest paymentRequest) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  private ZonedDateTime calculateLocalExpiry(ZonedDateTime expiresAt) {
+    // TODO This should be a little more sophisticated
+    return expiresAt;
   }
 
   private void onLedgerConnected(ClientLedgerConnectEvent event) {

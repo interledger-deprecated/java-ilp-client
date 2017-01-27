@@ -4,8 +4,8 @@ import java.security.PublicKey;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.model.AccountInfo;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.AccountInfo;
 
 public class ClientAccountInfo implements AccountInfo {
 

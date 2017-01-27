@@ -5,8 +5,8 @@ import java.security.PublicKey;
 import javax.money.CurrencyUnit;
 import javax.money.format.MonetaryAmountFormat;
 
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.LedgerInfo;
 
 public class ClientLedgerInfo implements LedgerInfo {
 

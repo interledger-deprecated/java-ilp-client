@@ -30,5 +30,5 @@ gradle-app.setting
 **/*.log
 **/nbactions.xml
 
-### Local Config - May contain passwords ###
-config/application.properties
+## OSX ##
+**/.DS_Store

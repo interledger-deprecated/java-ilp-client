@@ -1,6 +1,6 @@
 package org.interledger.ilp.client;
 
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.ledger.model.LedgerMessage;
 
 @FunctionalInterface
 public interface LedgerMessageResponseHandler {

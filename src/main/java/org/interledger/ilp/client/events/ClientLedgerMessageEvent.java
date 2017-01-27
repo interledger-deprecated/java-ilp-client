@@ -2,8 +2,8 @@ package org.interledger.ilp.client.events;
 
 import java.util.EventObject;
 
-import org.interledger.ilp.core.ledger.events.LedgerMessageEvent;
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.ledger.events.LedgerMessageEvent;
+import org.interledger.ilp.ledger.model.LedgerMessage;
 
 public class ClientLedgerMessageEvent 
   extends EventObject implements LedgerMessageEvent {

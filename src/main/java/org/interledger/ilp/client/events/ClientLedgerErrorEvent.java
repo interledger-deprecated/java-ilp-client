@@ -2,7 +2,7 @@ package org.interledger.ilp.client.events;
 
 import java.util.EventObject;
 
-import org.interledger.ilp.core.ledger.events.LedgerEvent;
+import org.interledger.ilp.ledger.events.LedgerEvent;
 
 public class ClientLedgerErrorEvent extends EventObject implements LedgerEvent {
 

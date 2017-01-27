@@ -7,7 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.ledger.model.LedgerMessage;
 
 /**
  * A concurrent hashmap that evicts entries after a timeout.
