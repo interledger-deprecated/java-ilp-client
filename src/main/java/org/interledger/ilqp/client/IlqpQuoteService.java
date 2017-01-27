@@ -38,19 +38,18 @@ public class IlqpQuoteService implements QuoteService {
   
   private LedgerClient client;
   private Set<InterledgerAddress> connectors;
-  private int requestTimeout;
+  private int requestTimeoutMillis;
   
   public IlqpQuoteService(LedgerClient client) {
-    this(client, client.getRecommendedConnectors(), 60 * 1000);
+    this(client, client.getRecommendedConnectors(), (int) TimeUnit.SECONDS.toMillis(60));
   }
 
-  public IlqpQuoteService(LedgerClient client, Set<InterledgerAddress> connectors, int requestTimeout) {
+  public IlqpQuoteService(LedgerClient client, Set<InterledgerAddress> connectors, int requestTimeoutMillis) {
     this.client = client;
     this.connectors = connectors;
-    this.requestTimeout = requestTimeout;
+    this.requestTimeoutMillis = requestTimeoutMillis;
   }
 
-  //TODO Allow user to pass in a BestQuoteResolutionStrategy
   public QuoteResponse requestQuote(QuoteRequest query, QuoteSelectionStrategy selectionStrategy) throws InterledgerQuotingProtocolException {
 
     throwIfClientNotConnected();
@@ -134,7 +133,7 @@ public class IlqpQuoteService implements QuoteService {
     message.setData(query);
     
     try {
-      LedgerMessage response = client.sendMessage(connector, "quote_request", query, requestTimeout);
+      LedgerMessage response = client.sendMessage(connector, "quote_request", query, requestTimeoutMillis);
       if("error".equals(response.getType())) {
         QuoteErrorResponse error = (QuoteErrorResponse) response.getData();
         
