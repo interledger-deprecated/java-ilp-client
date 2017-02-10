@@ -1,4 +1,4 @@
-# java-ilp-client
+# java-ilp-client [![CircleCI](https://circleci.com/gh/interledger/java-ilp-client.svg?style=svg)](https://circleci.com/gh/interledger/java-ilp-client)
 
 A sending and receiving client for ILP
 
