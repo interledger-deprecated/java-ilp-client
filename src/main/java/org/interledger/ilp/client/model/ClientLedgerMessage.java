@@ -1,10 +1,13 @@
 package org.interledger.ilp.client.model;
 
-import java.util.UUID;
-
 import org.interledger.ilp.InterledgerAddress;
 import org.interledger.ilp.ledger.model.LedgerMessage;
 
+import java.util.UUID;
+
+/**
+ * Concrete implementation of a message exchanged with a ledger.
+ */
 public class ClientLedgerMessage implements LedgerMessage {
 
   private UUID id;
@@ -12,7 +15,7 @@ public class ClientLedgerMessage implements LedgerMessage {
   private InterledgerAddress from;
   private InterledgerAddress to;
   private Object data;
-  
+
   @Override
   public UUID getId() {
     return id;
@@ -22,7 +25,7 @@ public class ClientLedgerMessage implements LedgerMessage {
   public String getType() {
     return type;
   }
-  
+
   @Override
   public InterledgerAddress getFrom() {
     return this.from;

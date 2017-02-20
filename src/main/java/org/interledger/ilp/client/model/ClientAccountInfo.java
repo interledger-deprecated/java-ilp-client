@@ -1,12 +1,15 @@
 package org.interledger.ilp.client.model;
 
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.AccountInfo;
+
 import java.security.PublicKey;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.InterledgerAddress;
-import org.interledger.ilp.ledger.model.AccountInfo;
-
+/**
+ * Concrete implementation defining information about a given account on the ledger.
+ */
 public class ClientAccountInfo implements AccountInfo {
 
   private String id;

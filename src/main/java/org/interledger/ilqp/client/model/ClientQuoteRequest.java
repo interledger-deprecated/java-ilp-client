@@ -1,12 +1,15 @@
 package org.interledger.ilqp.client.model;
 
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.quoting.model.QuoteRequest;
+
 import java.time.Duration;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.ilp.InterledgerAddress;
-import org.interledger.quoting.model.QuoteRequest;
-
+/**
+ * Concrete implementation of an ILQP quote request.
+ */
 public class ClientQuoteRequest implements QuoteRequest {
 
   private InterledgerAddress sourceAddress;
@@ -15,7 +18,7 @@ public class ClientQuoteRequest implements QuoteRequest {
   private InterledgerAddress destinationAddress;
   private MonetaryAmount destinationAmount;
   private Duration destinationExpiryDuration;
-  
+
   @Override
   public InterledgerAddress getSourceAddress() {
     return sourceAddress;

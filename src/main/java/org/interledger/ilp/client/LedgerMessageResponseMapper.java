@@ -1,5 +1,7 @@
 package org.interledger.ilp.client;
 
+import org.interledger.ilp.ledger.model.LedgerMessage;
+
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -7,35 +9,44 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.interledger.ilp.ledger.model.LedgerMessage;
-
 /**
- * A concurrent hashmap that evicts entries after a timeout.
- * 
- * Copied from:
+ * A concurrent hashmap that evicts entries after a timeout. Copied from:
  * http://stackoverflow.com/questions/3802370/java-time-based-map-cache-with-expiring-keys
  */
+// TODO: consider replacing custom implementation with something out of the Guava library.
 public class LedgerMessageResponseMapper {
+
+  public static final long DEFAULT_EXPIRY_MS = 1000;
 
   private Map<UUID, BlockingQueue<LedgerMessage>> responseQueues = new ConcurrentHashMap<>();
   private Map<UUID, Long> timeMap = new ConcurrentHashMap<UUID, Long>();
-  private long expiryInMillis = 1000;
+  private long expiryInMillis;
 
+  /**
+   * Default constructor. Sets the expiry time to 1000 millis.
+   */
   public LedgerMessageResponseMapper() {
-    initialize();
+    this(DEFAULT_EXPIRY_MS);
   }
 
+  /**
+   * Constructs a response mapper using the given expiry time.
+   * 
+   * @param expiryInMillis The maximum amount of time a request will be held waiting for a response
+   *        before being evicted from the cache.
+   */
   public LedgerMessageResponseMapper(long expiryInMillis) {
     this.expiryInMillis = expiryInMillis;
     initialize();
   }
 
-  void initialize() {
-    new CleanerThread("LedgerResponseMessageTimeoutMonitor").start();
-  }
-
+  /**
+   * Places a request message into the cache.
+   * 
+   * @param request The request message to cache.
+   * @return A queue that can be used to block until the response is received.
+   */
   public BlockingQueue<LedgerMessage> storeRequest(LedgerMessage request) {
-
     if (request.getId() == null) {
       throw new IllegalArgumentException("Request must have an ID.");
     }
@@ -43,13 +54,18 @@ public class LedgerMessageResponseMapper {
     UUID id = request.getId();
     Date date = new Date();
     timeMap.put(id, date.getTime());
-    BlockingQueue<LedgerMessage> q = new ArrayBlockingQueue<>(1);
-    responseQueues.put(id, q);
-    return q;
+    // TODO: shouldnt we return a future instead?
+    BlockingQueue<LedgerMessage> messageQueue = new ArrayBlockingQueue<>(1);
+    responseQueues.put(id, messageQueue);
+    return messageQueue;
   }
 
+  /**
+   * Handles response messages that have arrived for a request that may still be in the cache.
+   * 
+   * @param response The response message received from the ledger.
+   */
   public void handleResponse(LedgerMessage response) {
-
     if (response.getId() == null) {
       throw new IllegalArgumentException("Response must have an ID.");
     }
@@ -58,14 +74,28 @@ public class LedgerMessageResponseMapper {
     BlockingQueue<LedgerMessage> responseQueue = responseQueues.get(id);
     remove(id);
     responseQueue.add(response);
-
   }
 
-  private void remove(UUID id) {
+  /**
+   * Performs the necessary initialization for the cache.
+   */
+  protected void initialize() {
+    new CleanerThread("LedgerResponseMessageTimeoutMonitor").start();
+  }
+
+  /**
+   * Removes an item from the cache.
+   * 
+   * @param id The id of the item to remove.
+   */
+  protected void remove(UUID id) {
     timeMap.remove(id);
     responseQueues.remove(id);
   }
 
+  /**
+   * This thread is responsible for cleaning the cache of expired items.
+   */
   class CleanerThread extends Thread {
     public CleanerThread(String string) {
       super(string);
