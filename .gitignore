@@ -17,6 +17,8 @@ hs_err_pid*
 .gradle/
 **/build/
 .nb-gradle/
+## make sure the gradle wrapper is checked in though
+!gradle/wrapper/gradle-wrapper.jar
 
 # Ignore Gradle GUI config
 gradle-app.setting
