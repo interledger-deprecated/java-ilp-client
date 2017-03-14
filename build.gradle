@@ -1,11 +1,11 @@
+group = 'org.interledger'
+description = 'Interledger Ledger Client'
+version = '1.0.0-SNAPSHOT'
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'checkstyle'
-
-group = 'org.interledger'
-description = 'Interledger Ledger Client'
-version = '1.0.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -31,37 +31,39 @@ dependencies {
     compile project(":java-ilp-core")
     compile project(":java-crypto-conditions")
 
- 	compile("org.slf4j:jcl-over-slf4j:1.7.12")
-    
+    compile("org.slf4j:jcl-over-slf4j:1.7.12")
+
     testCompile("junit:junit:4.12")    
 }
 
 //Maven compatibility task:
-task writePom << {    
-    pom {
-        project {
-            inceptionYear '2016'    
-            properties {
-                "project.build.sourceEncoding" "UTF-8"
-                "checkstyle.config.location" "google_checks.xml"
-                "checkstyle.consoleOutput" "true"
-            }            
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
+task writePom {
+    doLast {
+        pom {
+            project {
+                inceptionYear '2016'    
+                properties {
+                    "project.build.sourceEncoding" "UTF-8"
+                    "checkstyle.config.location" "google_checks.xml"
+                    "checkstyle.consoleOutput" "true"
+                }            
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+                reporting  {
+                    plugins {
+                        plugin {
+                            groupId "org.apache.maven.plugins"
+                            artifactId "maven-checkstyle-plugin"
+                            version "2.17"
+                        }                   
+                    }
                 }
             }
-            reporting  {
-                plugins {
-                    plugin {
-                        groupId "org.apache.maven.plugins"
-                        artifactId "maven-checkstyle-plugin"
-                        version "2.17"
-                    }                   
-                }
-            }
-        }
-    }.writeTo("pom.xml")
+        }.writeTo("pom.xml")
+    }
 }

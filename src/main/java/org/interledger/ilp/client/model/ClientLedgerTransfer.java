@@ -1,14 +1,17 @@
 package org.interledger.ilp.client.model;
 
+import org.interledger.cryptoconditions.Condition;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
+
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import javax.money.MonetaryAmount;
 
-import org.interledger.cryptoconditions.Condition;
-import org.interledger.ilp.InterledgerAddress;
-import org.interledger.ilp.ledger.model.LedgerTransfer;
-
+/**
+ * Concrete implementation of a transfer on a ledger.
+ */
 public class ClientLedgerTransfer implements LedgerTransfer {
 
   private UUID id;
