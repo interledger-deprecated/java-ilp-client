@@ -6,16 +6,20 @@ dependencies:
   pre:
     # we rely on the source of several other ILP projects for now. 
     # TODO: once we reach a release milestone, swap this for dependecies on published jars
-    - cd .. && git clone https://github.com/interledger/java-crypto-conditions
+    # FIXME: remove custom branch hackery as soon as crypto-conditions is sorted out!
+    - cd .. && git clone https://github.com/interledger/java-crypto-conditions && cd java-crypto-conditions && git checkout origin/ahb-uri-updates
     - cd .. && git clone https://github.com/interledger/java-ilp-core
 
 test:
-  override:
-    # we override the standard circleci gradle test to include the checkstyle checks
-    - if [ -e ./gradlew ]; then ./gradlew test check;else gradle test check;fi
   post:
+    # run the checkstyle checks
+    - if [ -e ./gradlew ]; then ./gradlew check;else gradle check ;fi
+    # run the code coverage report 
+    - if [ -e ./gradlew ]; then ./gradlew jacocoTestReport;else gradle jacocoTestReport;fi
     # see https://circleci.com/docs/test-metadata/#gradle-junit-results
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
     - mkdir -p $CIRCLE_TEST_REPORTS/checkstyle/
     - find . -type f -regex ".*/build/reports/checkstyle/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/checkstyle/ \;
+    # publish the coverage report to codecov.io
+    - bash <(curl -s https://codecov.io/bash)
