@@ -6,7 +6,8 @@ dependencies:
   pre:
     # we rely on the source of several other ILP projects for now. 
     # TODO: once we reach a release milestone, swap this for dependecies on published jars
-    - cd .. && git clone https://github.com/interledger/java-crypto-conditions
+    # FIXME: remove custom branch hackery as soon as crypto-conditions is sorted out!
+    - cd .. && git clone https://github.com/interledger/java-crypto-conditions && cd java-crypto-conditions && git checkout origin/ahb-uri-updates
     - cd .. && git clone https://github.com/interledger/java-ilp-core
 
 test:
